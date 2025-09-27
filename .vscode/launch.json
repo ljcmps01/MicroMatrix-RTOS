@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug STM32",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/blinky.elf",
+            "device": "STM32F051K8",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f0x.cfg"
+            ],
+            "svdFile": "./STM32F0x1.svd",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            },
+            "runToEntryPoint": "main",
+            "rttConfig": {
+                "enabled": true,
+                "clearSearch": false,
+                "polling_interval": 50,
+                "decoders": [
+                    {
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "BMP Debug",
+            "type": "cortex-debug",
+            "servertype": "bmp",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}/build/blinky.elf", // replace with your executable
+            "interface": "swd",
+            "device": "STM32F051K8", // replace with your device
+            "BMPGDBSerialPort": "/dev/ttyACM1", // Use whatever serial port makes sense for your OS and BMP setup
+            "runToEntryPoint": "main" // runToMain is deprecated.
+        }
+    ]
+}
