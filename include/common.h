@@ -1,5 +1,8 @@
 #include "stm32f0xx_hal.h"
+#include "board.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "matrixstate.h"
 #include "fonts.h"
+#include "buttons.h"
+#include "SEGGER_RTT.h"

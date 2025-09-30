@@ -6,9 +6,7 @@
 #include "task.h"
 #include "SEGGER_RTT.h"
 
-#include "board.h"
-#include "matrixstate.h"
-#include "fonts.h"
+#include "common.h"
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);

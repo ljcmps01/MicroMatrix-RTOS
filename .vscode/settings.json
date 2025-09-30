@@ -4,6 +4,7 @@
         "segger_rtt.h": "c",
         "stm32f0xx.h": "c",
         "matrixstate.h": "c",
-        "fonts.h": "c"
+        "fonts.h": "c",
+        "buttons.h": "c"
     }
 }
