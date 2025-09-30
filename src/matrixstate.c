@@ -40,6 +40,37 @@ void Matrix_Init(
 
 }
 
+void vMatrixMultiplexTask(void *pvParameters)
+{
+    Matrix_t *matrix = (Matrix_t *)pvParameters;
+    for (;;)
+    {
+        if (matrix->initialized)
+        {
+            crop_input(matrix);
+            if (matrix->rotate) {
+                uint8_t col_offset = __builtin_ctz(matrix->col_pin);
+                for (int fil = 0; fil < matrix->rows; fil++) {
+                    matrix->columns_port->ODR |= (matrix->x_mask << col_offset);
+                    matrix->columns_port->ODR &= ~(matrix->output[fil] << col_offset);
+                    HAL_GPIO_WritePin(matrix->rows_port, (matrix->row_pin << fil), GPIO_PIN_SET);
+                    vTaskDelay(pdMS_TO_TICKS(1));
+                    HAL_GPIO_WritePin(matrix->rows_port, (matrix->row_pin << fil), GPIO_PIN_RESET);
+                }
+            } else {
+                uint8_t row_offset = __builtin_ctz(matrix->row_pin);
+                for (int fil = 0; fil < matrix->rows; fil++) {
+                    matrix->rows_port->ODR &= ~(matrix->y_mask << row_offset);
+                    matrix->rows_port->ODR |= (matrix->output[fil] << row_offset);
+                    HAL_GPIO_WritePin(matrix->columns_port, (matrix->col_pin << fil), GPIO_PIN_RESET);
+                    vTaskDelay(pdMS_TO_TICKS(1));
+                    HAL_GPIO_WritePin(matrix->columns_port, (matrix->col_pin << fil), GPIO_PIN_SET);
+                }
+            }
+        }
+    }
+}
+
 void Matrix_Clear(Matrix_t *matrix){
     uint8_t clear_matrix[matrix->rows];
     for (int i = 0; i < matrix->rows; i++)

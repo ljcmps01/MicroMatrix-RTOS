@@ -49,12 +49,18 @@ void Matrix_Init(
     );
 
 /**
+ * @brief Main task for handling the matrix multiplexation
+ * 
+ * @param pvParameters The matrix struct to multiplex, MUST BE INITIALIZED
+ */
+void vMatrixMultiplexTask(void *pvParameters);    
+
+/**
  * @brief Limpia el vector de salida de la matriz
  * 
  * @param matrix 
  */
 void Matrix_Clear(Matrix_t *matrix);
-
 
 /**
  * @brief Funcion de desplazamiento de la matriz
