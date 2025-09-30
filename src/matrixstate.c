@@ -1,4 +1,5 @@
 #include "matrixstate.h"
+#include "common.h"
 
 void Matrix_Init(
     Matrix_t *new_matrix,
