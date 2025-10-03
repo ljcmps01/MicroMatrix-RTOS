@@ -6,14 +6,12 @@
 #define LONG_PRESS_MS    800
 #define DOUBLE_TAP_MS    200
 
-
-
-void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, uint8_t active_level, ButtonCallback cb){
+void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, ButtonCallback cb){
     GPIO_InitTypeDef GPIO_InitStruct;
 
     btn->port = port;
     btn->pin = pin;
-    btn->active_level = active_level;
+    btn->active_level = 0;  // hardcoded due to hardware limitations
     btn->state = 0;
     btn->last_state = 0;
     btn->last_change = 0;
@@ -21,13 +19,27 @@ void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, uint8_t active_l
     btn->click_count = 0;
 
     btn->long_press_check = 0;    
+
     btn->callback = cb;
 
     GPIO_InitStruct.Pin = pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(port, &GPIO_InitStruct);
+    
+    xTaskCreate(vButtonTask, "ButtonTask", 128, btn, 1, &btn->task_handle);
 }
+
+void vButtonTask(void *pvParameters)
+{
+    Button *sw = (Button *)pvParameters;
+    for(;;) {
+        uint32_t now = xTaskGetTickCount();
+        Button_Update(sw, now);
+        vTaskDelay(pdMS_TO_TICKS(10)); // poll every 10ms
+    }
+}
+
 void Button_Update(Button *btn, uint32_t now_ms){
     uint8_t raw = (HAL_GPIO_ReadPin(btn->port, btn->pin) == GPIO_PIN_SET) ? 1 : 0;
     uint8_t pressed = (raw == btn->active_level);

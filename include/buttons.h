@@ -1,7 +1,7 @@
 #ifndef __BUTTONS_H
 #define __BUTTONS_H
 
-#include "stm32f0xx_hal.h"
+#include "common.h"
 
 // Gesture definitions
 typedef enum {
@@ -37,9 +37,12 @@ typedef struct Button
     uint8_t long_press_check;
 
     ButtonCallback callback;
+    TaskHandle_t task_handle;
+    void *task;
 }Button;
 
-void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, uint8_t active_level, ButtonCallback cb);
+void vButtonTask(void *pvParameters);
+void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, ButtonCallback cb);
 void Button_Update(Button *btn, uint32_t now_ms);
 
 #endif

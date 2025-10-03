@@ -35,20 +35,6 @@ void ButtonHandler(Button *btn, ButtonEvent_t event)
     }
 }
 
-void vButtonTask(void *pvParameters)
-{
-    ButtonCallback ButtonHandler = (ButtonCallback)pvParameters;
-    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, 0, ButtonHandler);
-    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, 0, ButtonHandler);
-
-    for(;;) {
-        uint32_t now = xTaskGetTickCount();
-        Button_Update(&sw2, now);
-        Button_Update(&sw3, now);
-        vTaskDelay(pdMS_TO_TICKS(10)); // poll every 10ms
-    }
-}
-
 /* Blink task */
 void vBlinkTask(void *pvParameters)
 {
@@ -140,6 +126,9 @@ int main(void)
     Matrix_t pantalla;
     Matrix_Init(&pantalla,8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
 
+    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
+    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
+
     SEGGER_RTT_Init();  // <--- Initialize RTT buffer
     SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
 
@@ -149,7 +138,6 @@ int main(void)
 
     xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
-    xTaskCreate(vButtonTask, "Button", 128, &ButtonHandler, 3, NULL);
     xTaskCreate(vMatrixMultiplexTask, "MatrixMux", 256, &pantalla, 4, NULL);
     SEGGER_RTT_printf(0, "Free heap after tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
 
