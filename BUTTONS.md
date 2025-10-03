@@ -1,6 +1,6 @@
 # Button API
 
-The button API aims to modularize the functionality of both buttons available on the board while to make them configurable per app.
+The button API aims to modularize the functionality of both buttons available on the board while to make them configurable per app
 
 It's built around 4 essentials components:
 
