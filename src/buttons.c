@@ -6,6 +6,9 @@
 #define LONG_PRESS_MS    800
 #define DOUBLE_TAP_MS    200
 
+void vButtonTask(void *pvParameters);
+void Button_Update(Button *btn, uint32_t now_ms);
+
 void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, ButtonCallback cb){
     GPIO_InitTypeDef GPIO_InitStruct;
 

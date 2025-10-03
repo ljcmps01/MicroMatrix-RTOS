@@ -17,7 +17,6 @@ typedef enum {
 struct Button;
 typedef void (*ButtonCallback)(struct Button *btn, ButtonEvent_t event);
 
-// void vButtonTask(void *pvParameters);
 typedef struct Button
 {
     GPIO_TypeDef *port;
@@ -41,8 +40,14 @@ typedef struct Button
     void *task;
 }Button;
 
-void vButtonTask(void *pvParameters);
+/**
+ * @brief Initialize a button structure and starts its FreeRTOS task
+ * 
+ * @param btn declared Button to initialize
+ * @param port button port
+ * @param pin button pin
+ * @param cb callback function to handle button events
+ */
 void Button_Init(Button *btn, GPIO_TypeDef *port, uint16_t pin, ButtonCallback cb);
-void Button_Update(Button *btn, uint32_t now_ms);
 
 #endif
