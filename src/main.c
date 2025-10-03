@@ -14,6 +14,41 @@ static void MX_GPIO_Init(void);
 TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
 
+Button sw2,sw3;
+
+void ButtonHandler(Button *btn, ButtonEvent_t event)
+{
+    if (btn == &sw2) {
+        switch(event) {
+            case BUTTON_EVENT_SHORT: SEGGER_RTT_printf(0, "SW2 Short Press\n"); break;
+            case BUTTON_EVENT_LONG:  SEGGER_RTT_printf(0, "SW2 Long Press\n"); break;
+            case BUTTON_EVENT_DOUBLE:SEGGER_RTT_printf(0, "SW2 Double Tap\n"); break;
+            default: break;
+        }
+    } else if (btn == &sw3) {
+        switch(event) {
+            case BUTTON_EVENT_SHORT: SEGGER_RTT_printf(0, "SW3 Short Press\n"); break;
+            case BUTTON_EVENT_LONG:  SEGGER_RTT_printf(0, "SW3 Long Press\n"); break;
+            case BUTTON_EVENT_DOUBLE:SEGGER_RTT_printf(0, "SW3 Double Tap\n"); break;
+            default: break;
+        }
+    }
+}
+
+void vButtonTask(void *pvParameters)
+{
+    ButtonCallback ButtonHandler = (ButtonCallback)pvParameters;
+    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, 0, ButtonHandler);
+    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, 0, ButtonHandler);
+
+    for(;;) {
+        uint32_t now = xTaskGetTickCount();
+        Button_Update(&sw2, now);
+        Button_Update(&sw3, now);
+        vTaskDelay(pdMS_TO_TICKS(10)); // poll every 10ms
+    }
+}
+
 /* Blink task */
 void vBlinkTask(void *pvParameters)
 {
@@ -114,7 +149,7 @@ int main(void)
 
     xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
-    xTaskCreate(vButtonTask, "Button", 128, &pantalla, 3, NULL);
+    xTaskCreate(vButtonTask, "Button", 128, &ButtonHandler, 3, NULL);
     xTaskCreate(vMatrixMultiplexTask, "MatrixMux", 256, &pantalla, 4, NULL);
     SEGGER_RTT_printf(0, "Free heap after tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
 
