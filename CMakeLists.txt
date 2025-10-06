@@ -67,3 +67,41 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
     COMMAND arm-none-eabi-objcopy -O ihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
     COMMAND arm-none-eabi-objcopy -O binary ${PROJECT_NAME}.elf ${PROJECT_NAME}.bin
 )
+
+
+# ----------------------------
+# Static analysis configuration
+# ----------------------------
+
+# Generate compile_commands.json for clang-tidy and other tools
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ---- cppcheck ----
+find_program(CPPCHECK cppcheck)
+if(CPPCHECK)
+    message(STATUS "cppcheck found: ${CPPCHECK}")
+    add_custom_target(static-analysis
+        COMMAND ${CPPCHECK}
+            --verbose
+            --enable=all
+            --inconclusive
+            --std=c99
+            --inline-suppr
+            --force
+            --quiet
+            --suppress=missingIncludeSystem
+            --suppress=unusedFunction
+            --platform=unix64
+            -i ${CMAKE_SOURCE_DIR}/src/SEGGER_RTT.c
+            -i ${CMAKE_SOURCE_DIR}/src/SEGGER_RTT_printf.c
+            -i ${CMAKE_SOURCE_DIR}/drivers
+            -I ${CMAKE_SOURCE_DIR}/include
+            -I ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/src
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running cppcheck static analysis..."
+        VERBATIM
+    )
+else()
+    message(WARNING "cppcheck not found! Static analysis target will be unavailable.")
+endif()

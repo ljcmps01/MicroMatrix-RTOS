@@ -8,6 +8,7 @@
 - openocd
 - cmake
 - ninja
+- cppcheck
 - st tools (if using STLink)
 
 ### VSCode extensions
@@ -29,7 +30,3 @@
 - Standby; Texto inicial y suspensión
 - Juegos; Selección, Demo
 - Controles
-
-### Botones
-
-- Interfaz con combinación
