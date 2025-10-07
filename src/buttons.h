@@ -15,7 +15,7 @@ typedef enum {
 } ButtonEvent_t;
 
 struct Button;
-typedef void (*ButtonCallback)(struct Button *btn, ButtonEvent_t event);
+typedef void (*ButtonCallback)(const struct Button *btn, ButtonEvent_t event);
 
 typedef struct Button
 {

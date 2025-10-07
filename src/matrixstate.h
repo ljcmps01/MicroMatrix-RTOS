@@ -91,7 +91,7 @@ void crop_input (Matrix_t *matrix);
  * @param matrix matriz a modificar
  * @param data vector a cargar
  */
-void load_output(Matrix_t *matrix, uint8_t data[]);
+void load_output(Matrix_t *matrix, const uint8_t data[]);
 
 /**
  * @brief aplica espejado horizontal en la matriz de salida
