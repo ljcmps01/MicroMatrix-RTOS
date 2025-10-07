@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(blinky C ASM)
 
-set(STM32_HAL_DRIVER_PATH "drivers")
+set(STM32_HAL_DRIVER_PATH "external/drivers")
 
 set(HAL_SRC
     ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c
@@ -28,13 +28,12 @@ set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/linker/STM32F051K8Tx_FLASH.ld)
 # Sources
 file(GLOB SRC_FILES
     src/*.c
-    FreeRTOS/*.c
-    FreeRTOS/portable/GCC/ARM_CM0/*.c
-    FreeRTOS/portable/MemMang/heap_4.c
+    external/FreeRTOS/*.c
+    external/FreeRTOS/portable/GCC/ARM_CM0/*.c
+    external/FreeRTOS/portable/MemMang/heap_4.c
     ${HAL_SRC}
     ${STM32_HAL_DRIVER_PATH}/CMSIS/Device/system_stm32f0xx.c
-    src/SEGGER_RTT.c 
-    src/SEGGER_RTT_printfk.c 
+    external/rtt/*.c  
 
 )
 
@@ -44,10 +43,11 @@ add_executable(${PROJECT_NAME}.elf ${SRC_FILES} ${ASM_STARTUP})
 
 # Includes
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
-    include
+    # include
     src
-    FreeRTOS/include
-    FreeRTOS/portable/GCC/ARM_CM0
+    external/rtt
+    external/FreeRTOS/include
+    external/FreeRTOS/portable/GCC/ARM_CM0
     ${STM32_HAL_DRIVER_PATH}/CMSIS/Core/Include
     ${STM32_HAL_DRIVER_PATH}/CMSIS/Device/Include
     ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Inc
@@ -92,10 +92,8 @@ if(CPPCHECK)
             --suppress=missingIncludeSystem
             --suppress=unusedFunction
             --platform=unix64
-            -i ${CMAKE_SOURCE_DIR}/src/SEGGER_RTT.c
-            -i ${CMAKE_SOURCE_DIR}/src/SEGGER_RTT_printf.c
-            -i ${CMAKE_SOURCE_DIR}/drivers
-            -I ${CMAKE_SOURCE_DIR}/include
+            -i ${CMAKE_SOURCE_DIR}/external
+            # -I ${CMAKE_SOURCE_DIR}/include
             -I ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/src
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
