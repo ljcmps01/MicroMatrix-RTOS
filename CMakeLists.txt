@@ -91,10 +91,20 @@ if(CPPCHECK)
             --quiet
             --suppress=missingIncludeSystem
             --suppress=unusedFunction
+            --suppress=*:${CMAKE_SOURCE_DIR}/external/drivers/CMSIS/Core/Include/*
+            --suppress=*:${CMAKE_SOURCE_DIR}/external/drivers/STM32F0xx_HAL_Driver/*
+            --suppress=*:${CMAKE_SOURCE_DIR}/external/FreeRTOS/*
+            --suppress=*:${CMAKE_SOURCE_DIR}/external/rtt/*
             --platform=unix64
-            -i ${CMAKE_SOURCE_DIR}/external
-            # -I ${CMAKE_SOURCE_DIR}/include
+            -I ${CMAKE_SOURCE_DIR}/external/FreeRTOS/include
+            -I ${CMAKE_SOURCE_DIR}/external/FreeRTOS/portable/GCC/ARM_CM0
+            -I ${CMAKE_SOURCE_DIR}/external/rtt
+            -I ${CMAKE_SOURCE_DIR}/external/drivers/STM32F0xx_HAL_Driver/Inc
+            -I ${CMAKE_SOURCE_DIR}/external/drivers/CMSIS/Device/Include
+            -I ${CMAKE_SOURCE_DIR}/external/drivers/CMSIS/Core/Include
             -I ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/src
+
             ${CMAKE_SOURCE_DIR}/src
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Running cppcheck static analysis..."
