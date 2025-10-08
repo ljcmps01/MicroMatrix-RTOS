@@ -84,7 +84,6 @@ void Matrix_Clear(Matrix_t *matrix){
 
 void shift_matrix(Matrix_t *matrix,uint8_t y)
 {
-    int old_value=matrix->output[0];
     int new_value=matrix->output[0];
     for (int fil = 0; fil < matrix->rows; fil++)
     {
@@ -94,7 +93,7 @@ void shift_matrix(Matrix_t *matrix,uint8_t y)
             }
             else
             {
-                old_value=matrix->output[fil];
+                int old_value=matrix->output[fil];
                 matrix->output[fil]=new_value;
                 new_value=old_value;
             }
@@ -125,7 +124,7 @@ void crop_input (Matrix_t *matrix){
     
 }
 
-void load_output(Matrix_t *matrix, uint8_t data[]){
+void load_output(Matrix_t *matrix, const uint8_t data[]){
     for (int i = 0; i < matrix->rows; i++)
     {
         matrix->output[i]=data[i];

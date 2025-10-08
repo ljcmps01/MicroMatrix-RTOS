@@ -20,23 +20,23 @@ Matrix_t pantalla;
 uint8_t counter=0;
 
 
-void ButtonHandler(Button *btn, ButtonEvent_t event)
+void ButtonHandler(const Button *btn, ButtonEvent_t event)
 {
     if (btn == &sw2) {
         switch(event) {
             case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_printf(0, "SW2 Short Press\n"); 
+                SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
                 if(counter<9) counter++;
                 else counter=0;
                 load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_printf(0, "SW2 Long Press\n"); 
+                SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
                 counter=0;
                 load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_printf(0, "SW2 Double Tap\n"); 
+                SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
                 if(counter>0) counter--;
                 else counter=9;
                 load_output(&pantalla,digits[counter]);
@@ -46,18 +46,18 @@ void ButtonHandler(Button *btn, ButtonEvent_t event)
     } else if (btn == &sw3) {
         switch(event) {
             case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_printf(0, "SW3 Short Press\n");             
+                SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
                 if(counter>0) counter--;
                 else counter=9;
                 load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_printf(0, "SW3 Long Press\n"); 
+                SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
                 counter=9;
                 load_output(&pantalla,digits[counter]);                
                 break;
             case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_printf(0, "SW3 Double Tap\n"); 
+                SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
                 if(counter<9) counter++;
                 else counter=0;
                 load_output(&pantalla,digits[counter]);
@@ -83,15 +83,14 @@ void vBlinkTask(void *pvParameters)
 void vRTTTask(void *pvParameters)
 {
     char buffer[32];
-    int r;
-
+    
     SEGGER_RTT_WriteString(0, "RTT control task started.\n");
     SEGGER_RTT_WriteString(0, "Commands: on | off | toggle | manual | blink\n");
 
     for (;;)
     {
         // Non-blocking read from RTT channel 0
-        r = SEGGER_RTT_Read(0, buffer, sizeof(buffer)-1);
+        int r = SEGGER_RTT_Read(0, buffer, sizeof(buffer)-1);
         if (r > 0) {
             buffer[r] = '\0'; // null terminate
 

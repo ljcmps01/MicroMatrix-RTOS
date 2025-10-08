@@ -1,0 +1,15 @@
+on: [push]
+jobs:
+  build_and_static_analysis:
+    runs-on: ubuntu-latest
+    container:
+      image: ljcmps01/arm-gcc-14.3:latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Set up CMake
+      run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-none-eabi.cmake
+    - name: Compile firmware
+      run: cmake --build build --target blinky.elf
+    - name: Run static analysis
+      run: cmake --build build --target static-analysis
