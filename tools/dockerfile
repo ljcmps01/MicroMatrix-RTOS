@@ -1,0 +1,22 @@
+FROM ubuntu:22.04
+
+# Install necessary packages
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y build-essential cmake git wget cppcheck
+
+# Create a non-root user named "ubuntu" with sudo privileges
+# Install ARM toolchain (example using Arm GNU Toolchain 14.3.Rel1)
+RUN mkdir -p /opt && \
+    cd /opt && \
+    wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz && \
+    tar -xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz && \
+    rm arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz && \
+    mv arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi /opt/arm-none-eabi
+
+# Create non-root user
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 ubuntu
+USER ubuntu
+WORKDIR /home/ubuntu
+
+# Add toolchain to PATH for the non-root user
+ENV PATH="/opt/arm-none-eabi/bin:${PATH}"
