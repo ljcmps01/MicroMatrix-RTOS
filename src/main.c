@@ -28,18 +28,15 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(matrix,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
-                counter=0;
-                load_output(matrix,digits[counter]);
+                counter=9;
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(matrix,digits[counter]);
                 break;
             default: break;
         }
@@ -49,22 +46,20 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(matrix,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
-                counter=9;
-                load_output(matrix,digits[counter]);                
+                counter=0;
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(matrix,digits[counter]);
                 break;
             default: break;
         }
     }
+    load_output(matrix,digits[counter]);
 }
 
 /* Blink task */
