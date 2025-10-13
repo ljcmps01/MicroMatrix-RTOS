@@ -6,20 +6,21 @@
   },
   "configurePresets": [
     {
-      "name": "stm32-gcc",
+      "name": "counter",
       "displayName": "STM32F0 ARM GCC Toolchain",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "toolchainFile": "${sourceDir}/toolchain-arm-none-eabi.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_TYPE": "COUNTER"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "stm32-gcc",
-      "configurePreset": "stm32-gcc"
+      "name": "counter",
+      "configurePreset": "counter"
     }
   ]
 }

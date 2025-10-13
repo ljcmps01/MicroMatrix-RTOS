@@ -2,7 +2,9 @@
 #include <string.h>
 
 #include "common.h"
+#if COUNTER
 #include "counter.h"
+#endif
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -85,7 +87,10 @@ int main(void)
     xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
 
+    #if COUNTER
+    SEGGER_RTT_WriteString(0, "Start Counter App\n");
     RunApp(); // Start the counter app
+    #endif
     /* Start scheduler */
     vTaskStartScheduler();
 
