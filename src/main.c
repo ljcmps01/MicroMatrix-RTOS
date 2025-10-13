@@ -1,66 +1,14 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f0xx_hal.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "SEGGER_RTT.h"
-
 #include "common.h"
+#include "counter.h"
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
 TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
-
-Button sw2,sw3;
-
-uint8_t counter=0;
-
-
-void ButtonHandler(const Button *btn, ButtonEvent_t event)
-{
-    Matrix_t *matrix = GetMatrix();
-    if (btn == &sw2) {
-        switch(event) {
-            case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
-                if(counter<9) counter++;
-                else counter=0;
-                break;
-            case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
-                counter=9;
-                break;
-            case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
-                if(counter>0) counter--;
-                else counter=9;
-                break;
-            default: break;
-        }
-    } else if (btn == &sw3) {
-        switch(event) {
-            case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
-                if(counter>0) counter--;
-                else counter=9;
-                break;
-            case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
-                counter=0;
-                break;
-            case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
-                if(counter<9) counter++;
-                else counter=0;
-                break;
-            default: break;
-        }
-    }
-    load_output(matrix,digits[counter]);
-}
 
 /* Blink task */
 void vBlinkTask(void *pvParameters)
@@ -128,20 +76,16 @@ int main(void)
     SystemClock_Config();
 
     Matrix_Init(GetMatrix(),8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
-    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
-    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
 
     SEGGER_RTT_Init();  // <--- Initialize RTT buffer
     SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
 
     MX_GPIO_Init();
-    /* Create blink task */    
-    SEGGER_RTT_printf(0, "Free heap before tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
 
     xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
-    SEGGER_RTT_printf(0, "Free heap after tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
 
+    RunApp(); // Start the counter app
     /* Start scheduler */
     vTaskStartScheduler();
 

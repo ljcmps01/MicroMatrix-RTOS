@@ -28,6 +28,7 @@ set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/linker/STM32F051K8Tx_FLASH.ld)
 # Sources
 file(GLOB SRC_FILES
     src/*.c
+    src/apps/counter/*.c
     external/FreeRTOS/*.c
     external/FreeRTOS/portable/GCC/ARM_CM0/*.c
     external/FreeRTOS/portable/MemMang/heap_4.c
@@ -45,6 +46,7 @@ add_executable(${PROJECT_NAME}.elf ${SRC_FILES} ${ASM_STARTUP})
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
     # include
     src
+    src/apps/counter
     external/rtt
     external/FreeRTOS/include
     external/FreeRTOS/portable/GCC/ARM_CM0
