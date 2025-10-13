@@ -127,34 +127,12 @@ void vRTTTask(void *pvParameters)
     }
 }
 
-void vApplicationMallocFailedHook(void)
-{
-    taskDISABLE_INTERRUPTS();
-    for(;;); // halt here
-}
-
-void vApplicationIdleHook(void)
-{
-    SEGGER_RTT_printf(0, "Heap free before tasks: %u\n", xPortGetFreeHeapSize());
-    vTaskDelay(pdMS_TO_TICKS(1000)); // Print every second
-}
-
-void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
-{
-    (void)xTask;
-    (void)pcTaskName;    
-    SEGGER_RTT_printf(0, "Stack overflow in task: %s\n", pcTaskName);
-    taskDISABLE_INTERRUPTS();   
-    for(;;); // halt here
-}
-
 int main(void)
 {
     HAL_Init();
     SystemClock_Config();
 
     Matrix_Init(GetMatrix(),8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
-
     Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
     Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
 
@@ -174,6 +152,28 @@ int main(void)
 
     /* Should never reach here */
     while (1) {}
+}
+
+
+void vApplicationMallocFailedHook(void)
+{
+    taskDISABLE_INTERRUPTS();
+    for(;;); // halt here
+}
+
+void vApplicationIdleHook(void)
+{
+    SEGGER_RTT_printf(0, "Heap free before tasks: %u\n", xPortGetFreeHeapSize());
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Print every second
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    (void)xTask;
+    (void)pcTaskName;    
+    SEGGER_RTT_printf(0, "Stack overflow in task: %s\n", pcTaskName);
+    taskDISABLE_INTERRUPTS();   
+    for(;;); // halt here
 }
 
 /* System clock config (48 MHz HSI/PLL for STM32F051) */
