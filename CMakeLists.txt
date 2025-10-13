@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
-project(blinky C ASM)
+project(MicroMatrix C ASM)
+
+if(DEFINED APP_TYPE)
+    add_compile_definitions(${APP_TYPE}=1)
+endif()
+
+
 
 set(STM32_HAL_DRIVER_PATH "external/drivers")
 

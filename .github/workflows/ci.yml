@@ -10,6 +10,6 @@ jobs:
     - name: Set up CMake
       run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-none-eabi.cmake
     - name: Compile firmware
-      run: cmake --build build --target blinky.elf
+      run: cmake --build build --target MicroMatrix.elf
     - name: Run static analysis
       run: cmake --build build --target static-analysis

@@ -11,7 +11,7 @@
         {
             "label": "flash",
             "type": "shell",
-            "command": "st-flash write build/blinky.bin 0x08000000",
+            "command": "st-flash write build/MicroMatrix.bin 0x08000000",
              "group": {
                 "kind": "build",
                 "isDefault": false
