@@ -3,8 +3,9 @@ project(MicroMatrix C ASM)
 
 if(DEFINED APP_TYPE)
     add_compile_definitions(${APP_TYPE}=1)
+    string(TOLOWER ${APP_TYPE} APP_NAME)
+    set(APP_PATH src/apps/${APP_NAME})
 endif()
-
 
 
 set(STM32_HAL_DRIVER_PATH "external/drivers")
@@ -34,8 +35,7 @@ set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/linker/STM32F051K8Tx_FLASH.ld)
 # Sources
 file(GLOB SRC_FILES
     src/*.c
-    if (APP_TYPE STREQUAL "COUNTER")
-        src/apps/counter/counter.c
+    ${APP_PATH}/*.c
     external/FreeRTOS/*.c
     external/FreeRTOS/portable/GCC/ARM_CM0/*.c
     external/FreeRTOS/portable/MemMang/heap_4.c
@@ -52,8 +52,7 @@ add_executable(${PROJECT_NAME}.elf ${SRC_FILES} ${ASM_STARTUP})
 # Includes
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
     src
-    if (APP_TYPE STREQUAL "COUNTER")
-        src/apps/counter
+    ${APP_PATH}
     external/rtt
     external/FreeRTOS/include
     external/FreeRTOS/portable/GCC/ARM_CM0
