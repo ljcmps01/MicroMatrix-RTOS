@@ -15,31 +15,31 @@ TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
 
 Button sw2,sw3;
-Matrix_t pantalla;
 
 uint8_t counter=0;
 
 
 void ButtonHandler(const Button *btn, ButtonEvent_t event)
 {
+    Matrix_t *matrix = GetMatrix();
     if (btn == &sw2) {
         switch(event) {
             case BUTTON_EVENT_SHORT: 
                 SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(&pantalla,digits[counter]);
+                load_output(matrix,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
                 counter=0;
-                load_output(&pantalla,digits[counter]);
+                load_output(matrix,digits[counter]);
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(&pantalla,digits[counter]);
+                load_output(matrix,digits[counter]);
                 break;
             default: break;
         }
@@ -49,18 +49,18 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(&pantalla,digits[counter]);
+                load_output(matrix,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
                 counter=9;
-                load_output(&pantalla,digits[counter]);                
+                load_output(matrix,digits[counter]);                
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(&pantalla,digits[counter]);
+                load_output(matrix,digits[counter]);
                 break;
             default: break;
         }
@@ -153,8 +153,7 @@ int main(void)
     HAL_Init();
     SystemClock_Config();
 
-    Matrix_Init(&pantalla,8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
-    load_output(&pantalla,digits[counter]);
+    Matrix_Init(GetMatrix(),8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
 
     Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
     Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
@@ -168,7 +167,6 @@ int main(void)
 
     xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
-    xTaskCreate(vMatrixMultiplexTask, "MatrixMux", 256, &pantalla, 4, NULL);
     SEGGER_RTT_printf(0, "Free heap after tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
 
     /* Start scheduler */

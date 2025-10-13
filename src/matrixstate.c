@@ -1,8 +1,41 @@
 #include "matrixstate.h"
 #include "common.h"
 
+struct Matrix
+{
+    int rows;       //Cantidad de filas (x)
+    int columns;    //Cantidad de columnas (y)
+
+    uint16_t output[MAX_FILAS]; //Matriz de visualizacion del display
+    uint16_t buffer[MAX_FILAS];
+
+    //Puertos de filas y columnas
+    GPIO_TypeDef * rows_port;   
+    GPIO_TypeDef * columns_port;
+
+    //Primeros pines de fila y columnas (deben ser consecutivos)
+    uint16_t row_pin;           
+    uint16_t col_pin;
+
+    //Flag de inicializacion correcta
+    uint8_t initialized;
+
+    //valores para limitar la matriz de salida a los valores marcados antes
+    int x_mask;
+    int y_mask;
+
+    uint8_t rotate;
+};
+
+static Matrix_t main_matrix;
+void vMatrixMultiplexTask(void *pvParameters);
+
+Matrix_t *GetMatrix(void) {
+    return &main_matrix;
+}
+
 void Matrix_Init(
-    Matrix_t *new_matrix,
+    Matrix_t *matrix,
     uint8_t rows,\
     uint8_t columns,\
     GPIO_TypeDef *row_port,\
@@ -11,34 +44,30 @@ void Matrix_Init(
     uint16_t first_col_pin,\
     uint8_t rotate)
 {
-    new_matrix->initialized=0;
+    if(!matrix || !row_port || !col_port) return;
+    if(rows>MAX_FILAS || columns>MAX_FILAS) return;
+    matrix->initialized=0;
 
-    if(rows<=MAX_FILAS && columns<=MAX_FILAS){
-        //Setteamos la cantidad de filas y columnas
-        new_matrix->rows=rows;
-        new_matrix->columns=columns;
-        
-        //Setteamos los puertos y pines de salida
-        new_matrix->rows_port=row_port;
-        new_matrix->columns_port=col_port;
-        new_matrix->row_pin=first_row_pin;
-        new_matrix->col_pin=first_col_pin;
+    //Setteamos la cantidad de filas y columnas
+    matrix->rows=rows;
+    matrix->columns=columns;
+    
+    //Setteamos los puertos y pines de salida
+    matrix->rows_port=row_port;
+    matrix->columns_port=col_port;
+    matrix->row_pin=first_row_pin;
+    matrix->col_pin=first_col_pin;
 
-        //Guardamos los valores de limitacion de la matriz
-        new_matrix->y_mask=(1<<rows)-1;
-        new_matrix->x_mask=(1<<columns)-1; 
+    //Guardamos los valores de limitacion de la matriz
+    matrix->y_mask=(1<<rows)-1;
+    matrix->x_mask=(1<<columns)-1; 
 
-        if(rotate)
-            new_matrix->rotate=1;
-        else
-            new_matrix->rotate=0;
- 
-        Matrix_Clear(new_matrix);
+    matrix->rotate=rotate?1:0;
+    
+    Matrix_Clear(matrix);
 
-        new_matrix->initialized=1;
-    }
-
-
+    matrix->initialized=1;
+    xTaskCreate(vMatrixMultiplexTask, "MatrixMux", 256, matrix, 4, NULL);
 }
 
 void vMatrixMultiplexTask(void *pvParameters)
