@@ -17,6 +17,19 @@
         "CMAKE_CXX_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-g++",
         "APP_TYPE": "COUNTER"
       }
+    },
+    {
+      "name": "bitris",
+      "displayName": "[bitris] STM32F0 ARM GCC Toolchain",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/toolchain-arm-none-eabi.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-gcc",
+        "CMAKE_CXX_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-g++",
+        "APP_TYPE": "BITRIS"
+      }
     }
   ]
 }
