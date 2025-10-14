@@ -4,6 +4,8 @@
 #include "common.h"
 #if COUNTER
 #include "counter.h"
+#elif BITRIS
+#include "bitris.h"
 #endif
 
 void SystemClock_Config(void);
@@ -90,6 +92,11 @@ int main(void)
     #if COUNTER
     SEGGER_RTT_WriteString(0, "Start Counter App\n");
     RunApp(); // Start the counter app
+    #elif BITRIS
+    SEGGER_RTT_WriteString(0, "Start Bitris App\n");
+    RunApp(); // Start the bitris app
+    #else
+    SEGGER_RTT_WriteString(0, "No app selected.\n");
     #endif
     /* Start scheduler */
     vTaskStartScheduler();
