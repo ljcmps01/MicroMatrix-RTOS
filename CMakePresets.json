@@ -6,20 +6,17 @@
   },
   "configurePresets": [
     {
-      "name": "stm32-gcc",
-      "displayName": "STM32F0 ARM GCC Toolchain",
+      "name": "counter",
+      "displayName": "[counter] STM32F0 ARM GCC Toolchain",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "toolchainFile": "${sourceDir}/toolchain-arm-none-eabi.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-gcc",
+        "CMAKE_CXX_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-g++",
+        "APP_TYPE": "COUNTER"
       }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "stm32-gcc",
-      "configurePreset": "stm32-gcc"
     }
   ]
 }
