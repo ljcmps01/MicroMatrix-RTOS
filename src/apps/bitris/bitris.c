@@ -19,16 +19,15 @@ uint8_t gamescreen[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
-    uint8_t player;
     Direction_t direction=RIGHT;
+    uint8_t *player=&gamescreen[0];
     size_t pos=0;
     BitrisState_t state=BITRIS_IDLE;
     for(;;)
     {
         switch(state){
             case BITRIS_IDLE:           // Player moving left and right
-                player=(1<<pos);
-                gamescreen[0]=player;
+                *player=(1<<pos);
                 direction?pos++:pos--;
                 direction=(pos==7)?LEFT:(pos==0)?RIGHT:direction;
                 
