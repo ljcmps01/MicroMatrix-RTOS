@@ -21,7 +21,6 @@ typedef struct {
     uint8_t pos;
     Direction_t direction;
     uint8_t level;
-    uint16_t lines_cleared;
     uint8_t gamescreen[8];
     BitrisState_t state;
     uint8_t max_level;
@@ -30,7 +29,6 @@ typedef struct {
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t bitris;
     bitris.level = 1;
-    bitris.lines_cleared = 0;
     bitris.max_level=8;
     for(size_t i=0;i<8;++i){
         bitris.gamescreen[i] = 0x00;
@@ -67,6 +65,7 @@ void vBitrisTask(void *pvParameters){
                 load_output(matrix,bitris.gamescreen);
                 vTaskDelay(pdMS_TO_TICKS(SPEED));
                 break;
+
             case BITRIS_FALLING:        // Player falling    
                 for(size_t i=0;i<(bitris.max_level-bitris.level);++i){
                     bitris.gamescreen[i] = (1<<pos);
@@ -78,12 +77,18 @@ void vBitrisTask(void *pvParameters){
                 }
                 bitris.state=BITRIS_LANDED;    
                 break;
+
             case BITRIS_LANDED:         // Player landed
                 bitris.gamescreen[bitris.max_level-bitris.level]|=bitris.gamescreen[0];
                 load_output(matrix,bitris.gamescreen);
+                bitris.state=BITRIS_CLEARING;    
+                break;
+
+            case BITRIS_CLEARING:       // Clearing lines
+                if(bitris.gamescreen[bitris.max_level-bitris.level]==255)
+                    bitris.level++;
                 bitris.state=BITRIS_IDLE;    
                 break;
-            case BITRIS_CLEARING:       // Clearing lines
             case BITRIS_GAMEOVER:       // Game over
             default:
                 break;
