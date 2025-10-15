@@ -3,6 +3,14 @@
 
 #define SPEED 100
 
+/*TODO:
+- Improve button latency
+- Improve level difficulty set
+- Implement lives
+- Implement Highscore   (Could be done through RTT until fonts is implemented)
+- Add animations (score, fail, gameover, etc)
+*/
+
 typedef enum {
     LEFT,
     RIGHT
