@@ -35,15 +35,16 @@ typedef struct {
 } BitrisScreen_t;
 
 BitrisScreen_t BitrisInit(){
-    BitrisScreen_t bitris;
-    bitris.level = 1;
-    bitris.max_level=8;
+    BitrisScreen_t new_bitris;
+    new_bitris.pos=0;
+    new_bitris.level = 1;
+    new_bitris.max_level=8;
     for(size_t i=0;i<8;++i){
-        bitris.gamescreen[i] = 0x00;
+        new_bitris.gamescreen[i] = 0x00;
     }
-    bitris.state = BITRIS_IDLE;
-    bitris.direction = RIGHT;
-    return bitris;
+    new_bitris.state = BITRIS_IDLE;
+    new_bitris.direction = RIGHT;
+    return new_bitris;
 }
 
 Button sw2,sw3;
@@ -60,15 +61,14 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
 
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
-    size_t pos = 0;
     for(;;)
     {
         switch(bitris.state){
             case BITRIS_IDLE:           // Player moving left and right
                 
-                bitris.gamescreen[0] = (1<<pos);
-                bitris.direction?pos++:pos--;
-                bitris.direction = (pos == 7)?LEFT:(pos == 0)?RIGHT:bitris.direction;
+                bitris.gamescreen[0] = (1<<bitris.pos);
+                bitris.direction?bitris.pos++:bitris.pos--;
+                bitris.direction = (bitris.pos == 7)?LEFT:(bitris.pos == 0)?RIGHT:bitris.direction;
                 
                 load_output(matrix,bitris.gamescreen);
                 vTaskDelay(pdMS_TO_TICKS(SPEED));
@@ -76,7 +76,7 @@ void vBitrisTask(void *pvParameters){
 
             case BITRIS_FALLING:        // Player falling    
                 for(size_t i=0;i<(bitris.max_level-bitris.level);++i){
-                    bitris.gamescreen[i] = (1<<pos);
+                    bitris.gamescreen[i] = (1<<bitris.pos);
                     load_output(matrix,bitris.gamescreen);
                     vTaskDelay(pdMS_TO_TICKS(SPEED/2));
                 }
