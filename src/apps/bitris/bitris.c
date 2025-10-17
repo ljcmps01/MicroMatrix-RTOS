@@ -5,10 +5,14 @@
 
 /*TODO:
 - Improve button latency
-- Improve level difficulty set
 - Implement lives
-- Implement Highscore   (Could be done through RTT until fonts is implemented)
+- Implement score   (Could be done through RTT until fonts is implemented)
+
 - Add animations (score, fail, gameover, etc)
+- Implement LedState for visual score indication
+- Add pause state
+    - For gameover pause
+    - Button gesture to pause the game
 */
 
 typedef enum {
@@ -95,9 +99,15 @@ void vBitrisTask(void *pvParameters){
             case BITRIS_CLEARING:       // Clearing lines
                 if(bitris.gamescreen[bitris.max_level-bitris.level]==255)
                     bitris.level++;
-                bitris.state=BITRIS_IDLE;    
+                bitris.state=bitris.level==8?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
+                bitris.level=1;
+                for(size_t i=1;i<(bitris.max_level-bitris.level);++i){
+                    bitris.gamescreen[i] = 0x00;
+                }
+                bitris.state=BITRIS_IDLE;
+                break;
             default:
                 break;
         }
