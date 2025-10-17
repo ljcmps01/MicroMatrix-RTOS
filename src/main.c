@@ -1,12 +1,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f0xx_hal.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "SEGGER_RTT.h"
-
 #include "common.h"
+#if COUNTER
+#include "counter.h"
+#elif BITRIS
+#include "bitris.h"
+#endif
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -28,18 +28,18 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(&pantalla,letters[counter]);
+                load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
                 counter=0;
-                load_output(&pantalla,letters[counter]);
+                load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(&pantalla,letters[counter]);
+                load_output(&pantalla,digits[counter]);
                 break;
             default: break;
         }
@@ -49,18 +49,18 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
                 if(counter>0) counter--;
                 else counter=9;
-                load_output(&pantalla,letters[counter]);
+                load_output(&pantalla,digits[counter]);
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
                 counter=9;
-                load_output(&pantalla,letters[counter]);                
+                load_output(&pantalla,digits[counter]);                
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
                 if(counter<9) counter++;
                 else counter=0;
-                load_output(&pantalla,letters[counter]);
+                load_output(&pantalla,digits[counter]);
                 break;
             default: break;
         }
@@ -127,6 +127,38 @@ void vRTTTask(void *pvParameters)
     }
 }
 
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+
+    Matrix_Init(GetMatrix(),8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
+
+    SEGGER_RTT_Init();  // <--- Initialize RTT buffer
+    SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
+
+    MX_GPIO_Init();
+
+    xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
+    xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
+
+    #if COUNTER
+    SEGGER_RTT_WriteString(0, "Start Counter App\n");
+    RunApp(); // Start the counter app
+    #elif BITRIS
+    SEGGER_RTT_WriteString(0, "Start Bitris App\n");
+    RunApp(); // Start the bitris app
+    #else
+    SEGGER_RTT_WriteString(0, "No app selected.\n");
+    #endif
+    /* Start scheduler */
+    vTaskStartScheduler();
+
+    /* Should never reach here */
+    while (1) {}
+}
+
+
 void vApplicationMallocFailedHook(void)
 {
     taskDISABLE_INTERRUPTS();
@@ -154,7 +186,7 @@ int main(void)
     SystemClock_Config();
 
     Matrix_Init(&pantalla,8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
-    load_output(&pantalla,letters[counter]);
+    load_output(&pantalla,digits[counter]);
 
     Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
     Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);

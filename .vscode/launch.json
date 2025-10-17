@@ -7,7 +7,7 @@
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/blinky.elf",
+            "executable": "${workspaceFolder}/build/MicroMatrix.elf",
             "device": "STM32F051K8",
             "configFiles": [
                 "interface/stlink.cfg",
@@ -37,7 +37,7 @@
             "servertype": "bmp",
             "request": "launch",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/build/blinky.elf", // replace with your executable
+            "executable": "${workspaceRoot}/build/MicroMatrix.elf", // replace with your executable
             "interface": "swd",
             "device": "STM32F051K8", // replace with your device
             "BMPGDBSerialPort": "/dev/ttyACM1", // Use whatever serial port makes sense for your OS and BMP setup
