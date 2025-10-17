@@ -71,7 +71,7 @@ void vBitrisTask(void *pvParameters){
                 bitris.direction = (bitris.pos == 7)?LEFT:(bitris.pos == 0)?RIGHT:bitris.direction;
                 
                 load_output(matrix,bitris.gamescreen);
-                vTaskDelay(pdMS_TO_TICKS(SPEED));
+                vTaskDelay(pdMS_TO_TICKS(SPEED-(bitris.level*10)));
                 break;
 
             case BITRIS_FALLING:        // Player falling    
