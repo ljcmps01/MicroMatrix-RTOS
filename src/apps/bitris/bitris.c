@@ -4,7 +4,6 @@
 #define SPEED 100
 
 /*TODO:
-- Improve button latency
 - Implement lives
 - Implement score   (Could be done through RTT until fonts is implemented)
 
@@ -56,10 +55,10 @@ BitrisScreen_t bitris;
 
 void ButtonHandler(const Button *btn, ButtonEvent_t event){
     switch(event) {
-        case BUTTON_EVENT_SHORT: 
+        case BUTTON_EVENT_PRESS:
             bitris.state = BITRIS_FALLING;
+        default:
             break;
-        default: break;
     }
 }
 
@@ -102,10 +101,11 @@ void vBitrisTask(void *pvParameters){
                 bitris.state=bitris.level==8?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
-                bitris.level=1;
+                bitris.level=0;
                 for(size_t i=1;i<(bitris.max_level-bitris.level);++i){
                     bitris.gamescreen[i] = 0x00;
                 }
+                bitris.level++;
                 bitris.state=BITRIS_IDLE;
                 break;
             default:
