@@ -86,7 +86,7 @@ int main(void)
 
     MX_GPIO_Init();
 
-    xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
+    // xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
     xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
 
     #if COUNTER
