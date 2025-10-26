@@ -40,10 +40,10 @@ typedef struct {
 
 typedef struct {
     uint32_t game_duration_total;
-    uint32_t game_duration_per_level;
+    uint32_t game_duration_per_level[MAX_LEVEL];
 
     uint16_t game_clicks_total;
-    uint16_t game_clicks_per_level;
+    uint16_t game_clicks_per_level[MAX_LEVEL];
     uint16_t failed_clicks;
 
     uint16_t player_precision;
@@ -52,10 +52,15 @@ typedef struct {
 Stadistics_t StadisticsInit (){
     Stadistics_t new_stats;
     new_stats.game_duration_total = xTaskGetTickCount();
-    new_stats.game_duration_per_level = 0;
-
     new_stats.game_clicks_total = 0;
-    new_stats.game_clicks_per_level = 0;
+    
+    new_stats.game_duration_per_level[0] = 0;
+
+    for (uint8_t i = 0; i < MAX_LEVEL; i++)
+    {
+        new_stats.game_clicks_per_level[i] = 0;
+    }
+
     new_stats.failed_clicks = 0;
     
     new_stats.player_precision = 0;
