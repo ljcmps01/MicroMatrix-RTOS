@@ -2,6 +2,7 @@
 #include "common.h"
 
 #define SPEED 100
+#define MAX_LEVEL 8
 
 /*TODO:
 - Implement lives
@@ -32,7 +33,7 @@ typedef struct {
     uint8_t pos;
     Direction_t direction;
     uint8_t level;
-    uint8_t gamescreen[8];
+    uint8_t gamescreen[MAX_LEVEL];
     BitrisState_t state;
     uint8_t max_level;
 } BitrisScreen_t;
@@ -41,8 +42,8 @@ BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
     new_bitris.pos=0;
     new_bitris.level = 1;
-    new_bitris.max_level=8;
-    for(size_t i=0;i<8;++i){
+    new_bitris.max_level=MAX_LEVEL;
+    for(size_t i=0;i<MAX_LEVEL;++i){
         new_bitris.gamescreen[i] = 0x00;
     }
     new_bitris.state = BITRIS_IDLE;
@@ -98,7 +99,7 @@ void vBitrisTask(void *pvParameters){
             case BITRIS_CLEARING:       // Clearing lines
                 if(bitris.gamescreen[bitris.max_level-bitris.level]==255)
                     bitris.level++;
-                bitris.state=bitris.level==8?BITRIS_GAMEOVER:BITRIS_IDLE;    
+                bitris.state=bitris.level==MAX_LEVEL?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
                 bitris.level=0;
