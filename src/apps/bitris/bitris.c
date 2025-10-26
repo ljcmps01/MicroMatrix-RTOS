@@ -38,6 +38,32 @@ typedef struct {
     uint8_t max_level;
 } BitrisScreen_t;
 
+typedef struct {
+    uint32_t game_duration_total;
+    uint32_t game_duration_per_level;
+
+    uint16_t game_clicks_total;
+    uint16_t game_clicks_per_level;
+    uint16_t failed_clicks;
+
+    uint16_t player_precision;
+}Stadistics_t;
+
+Stadistics_t StadisticsInit (){
+    Stadistics_t new_stats;
+    new_stats.game_duration_total = xTaskGetTickCount();
+    new_stats.game_duration_per_level = 0;
+
+    new_stats.game_clicks_total = 0;
+    new_stats.game_clicks_per_level = 0;
+    new_stats.failed_clicks = 0;
+    
+    new_stats.player_precision = 0;
+
+    return new_stats;
+}
+
+
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
     new_bitris.pos=0;
@@ -65,6 +91,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
 
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
+    Stadistics_t stadistics = StadisticsInit();
     for(;;)
     {
         switch(bitris.state){
