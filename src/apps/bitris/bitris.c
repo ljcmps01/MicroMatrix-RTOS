@@ -123,14 +123,24 @@ void vBitrisTask(void *pvParameters){
                 break;
 
             case BITRIS_LANDED:         // Player landed
+                uint8_t hit = bitris.gamescreen[bitris.max_level-bitris.level];
                 bitris.gamescreen[bitris.max_level-bitris.level]|=bitris.gamescreen[0];
+
+                if(hit == bitris.gamescreen[bitris.max_level-bitris.level])
+                    stadistics.failed_clicks++;
+
                 load_output(matrix,bitris.gamescreen);
                 bitris.state=BITRIS_CLEARING;    
                 break;
 
             case BITRIS_CLEARING:       // Clearing lines
-                if(bitris.gamescreen[bitris.max_level-bitris.level]==255)
+                if(bitris.gamescreen[bitris.max_level-bitris.level]==255){
                     bitris.level++;
+
+                    stadistics.game_duration_per_level[bitris.level] = bitris.level == 0?
+                        (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ:
+                        (xTaskGetTickCount() - stadistics.game_duration_per_level[bitris.level-1]) / configTICK_RATE_HZ;
+                }
                 bitris.state=bitris.level==MAX_LEVEL?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
