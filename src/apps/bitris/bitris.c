@@ -53,7 +53,7 @@ Stadistics_t StadisticsInit (){
     Stadistics_t new_stats;
     new_stats.game_duration_total = xTaskGetTickCount();
     new_stats.game_clicks_total = 0;
-    
+
     new_stats.game_duration_per_level[0] = 0;
 
     for (uint8_t i = 0; i < MAX_LEVEL; i++)
@@ -68,6 +68,30 @@ Stadistics_t StadisticsInit (){
     return new_stats;
 }
 
+void StadisticsPrint (Stadistics_t stats){
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_WriteString(0,"\tGAME STATS\n");
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_printf(0,"Game duration:\t\t%ds\n", stats.game_duration_total);
+    SEGGER_RTT_printf(0,"Total clicks made:\t%d\n", stats.game_clicks_total);
+    SEGGER_RTT_printf(0,"Failed clicks:\t\t%d\n", stats.failed_clicks);
+    SEGGER_RTT_printf(0,"Precision rate:\t\t%d\n\n", stats.failed_clicks*100/stats.game_clicks_total);
+
+
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_WriteString(0,"\tPER LEVEL STATS\n");
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    for (uint8_t i = 0; i < MAX_LEVEL-1; i++)
+    {
+        SEGGER_RTT_printf(0,"\t\tLEVEL  %d\n",i);
+        SEGGER_RTT_WriteString(0,"=================================\n");
+        SEGGER_RTT_printf(0,"Game duration:\t%d\n", stats.game_duration_per_level[i]);
+        SEGGER_RTT_printf(0,"Game clicks:\t%d\n", stats.game_clicks_per_level[i]);
+        SEGGER_RTT_WriteString(0,"=================================\n");
+            
+    }
+    
+}
 
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
@@ -151,6 +175,12 @@ void vBitrisTask(void *pvParameters){
                     bitris.gamescreen[i] = 0x00;
                 }
                 bitris.level++;
+                
+                //Closes stats
+                stadistics.game_duration_total = (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ;
+                StadisticsPrint(stadistics);
+                stadistics = StadisticsInit();
+
                 bitris.state=BITRIS_IDLE;
                 break;
             default:
