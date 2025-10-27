@@ -120,6 +120,8 @@ void vBitrisTask(void *pvParameters){
                     bitris.gamescreen[i] = 0x00;
                 }
                 bitris.state=BITRIS_LANDED;    
+                stadistics.game_clicks_total++;
+                stadistics.game_clicks_per_level[bitris.level]++;
                 break;
 
             case BITRIS_LANDED:         // Player landed
