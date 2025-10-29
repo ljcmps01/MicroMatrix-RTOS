@@ -145,7 +145,7 @@ void vBitrisTask(void *pvParameters){
                 }
                 bitris.state=BITRIS_LANDED;    
                 stadistics.game_clicks_total++;
-                stadistics.game_clicks_per_level[bitris.level]++;
+                stadistics.game_clicks_per_level[bitris.level-1]++;
                 break;
 
             case BITRIS_LANDED:         // Player landed
@@ -161,25 +161,19 @@ void vBitrisTask(void *pvParameters){
 
             case BITRIS_CLEARING:       // Clearing lines
                 if(bitris.gamescreen[bitris.max_level-bitris.level]==255){
-                    bitris.level++;
-
-                    stadistics.game_duration_per_level[bitris.level] = bitris.level == 0?
+                    stadistics.game_duration_per_level[bitris.level-1] = bitris.level == 0?
                         (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ:
-                        (xTaskGetTickCount() - stadistics.game_duration_per_level[bitris.level-1]) / configTICK_RATE_HZ;
+                        (xTaskGetTickCount() - stadistics.game_duration_per_level[bitris.level-2]) / configTICK_RATE_HZ;
+                    bitris.level++;
                 }
                 bitris.state=bitris.level==MAX_LEVEL?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
-                bitris.level=0;
-                for(size_t i=1;i<(bitris.max_level-bitris.level);++i){
-                    bitris.gamescreen[i] = 0x00;
-                }
-                bitris.level++;
-                
                 //Closes stats
                 stadistics.game_duration_total = (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ;
                 StadisticsPrint(stadistics);
                 stadistics = StadisticsInit();
+                bitris = BitrisInit();
 
                 bitris.state=BITRIS_IDLE;
                 break;
