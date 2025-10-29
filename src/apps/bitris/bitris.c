@@ -75,7 +75,7 @@ void StadisticsPrint (Stadistics_t stats){
     SEGGER_RTT_printf(0,"Game duration:\t\t%ds\n", stats.game_duration_total);
     SEGGER_RTT_printf(0,"Total clicks made:\t%d\n", stats.game_clicks_total);
     SEGGER_RTT_printf(0,"Failed clicks:\t\t%d\n", stats.failed_clicks);
-    SEGGER_RTT_printf(0,"Precision rate:\t\t%d\n\n", stats.failed_clicks*100/stats.game_clicks_total);
+    SEGGER_RTT_printf(0,"Precision rate:\t\t%d%%\n\n", stats.failed_clicks*100/stats.game_clicks_total);
 
 
     SEGGER_RTT_WriteString(0,"=================================\n");
@@ -85,7 +85,7 @@ void StadisticsPrint (Stadistics_t stats){
     {
         SEGGER_RTT_printf(0,"\t\tLEVEL  %d\n",i);
         SEGGER_RTT_WriteString(0,"=================================\n");
-        SEGGER_RTT_printf(0,"Game duration:\t%d\n", stats.game_duration_per_level[i]);
+        SEGGER_RTT_printf(0,"Game duration:\t%ds\n", stats.game_duration_per_level[i]);
         SEGGER_RTT_printf(0,"Game clicks:\t%d\n", stats.game_clicks_per_level[i]);
         SEGGER_RTT_WriteString(0,"=================================\n");
             
