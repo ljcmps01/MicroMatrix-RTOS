@@ -7,6 +7,9 @@ if(DEFINED APP_TYPE)
     set(APP_PATH src/apps/${APP_NAME})
 endif()
 
+if(RTT_MODE STREQUAL "BLOCKING")
+    add_compile_definitions(SEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL)
+endif()
 
 set(STM32_HAL_DRIVER_PATH "external/drivers")
 

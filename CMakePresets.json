@@ -28,7 +28,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-gcc",
         "CMAKE_CXX_COMPILER": "/opt/arm-none-eabi/bin/arm-none-eabi-g++",
-        "APP_TYPE": "BITRIS"
+        "APP_TYPE": "BITRIS",
+        "RTT_MODE": "BLOCKING"
       }
     }
   ]
