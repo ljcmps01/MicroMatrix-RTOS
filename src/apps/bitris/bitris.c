@@ -51,7 +51,7 @@ typedef struct {
 
 Stadistics_t StadisticsInit (){
     Stadistics_t new_stats;
-    new_stats.game_duration_total = xTaskGetTickCount();
+    new_stats.game_duration_total = pdTICKS_TO_MS(xTaskGetTickCount());
     new_stats.game_clicks_total = 0;
 
     new_stats.game_duration_per_level[0] = 0;
@@ -163,15 +163,15 @@ void vBitrisTask(void *pvParameters){
             case BITRIS_CLEARING:       // Clearing lines
                 if(bitris.gamescreen[bitris.max_level-bitris.level]==255){
                     stadistics.game_duration_per_level[bitris.level-1] = bitris.level == 0?
-                        (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ:
-                        (xTaskGetTickCount() - stadistics.game_duration_per_level[bitris.level-2]) / configTICK_RATE_HZ;
+                        (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total)/1000:
+                        (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_per_level[bitris.level-2])/1000;
                     bitris.level++;
                 }
                 bitris.state=bitris.level==MAX_LEVEL?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
                 //Closes stats
-                stadistics.game_duration_total = (xTaskGetTickCount() - stadistics.game_duration_total) / configTICK_RATE_HZ;
+                stadistics.game_duration_total = (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total)/1000;
                 StadisticsPrint(stadistics);
                 stadistics = StadisticsInit();
                 bitris = BitrisInit();
