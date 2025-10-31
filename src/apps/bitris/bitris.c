@@ -83,6 +83,7 @@ void StadisticsPrint (Stadistics_t stats){
     SEGGER_RTT_WriteString(0,"=================================\n");
     for (uint8_t i = 0; i < MAX_LEVEL-1; i++)
     {
+        vTaskDelay(pdMS_TO_TICKS(25));
         SEGGER_RTT_printf(0,"\t\tLEVEL  %d\n",i);
         SEGGER_RTT_WriteString(0,"=================================\n");
         SEGGER_RTT_printf(0,"Game duration:\t%ds\n", stats.game_duration_per_level[i]);
