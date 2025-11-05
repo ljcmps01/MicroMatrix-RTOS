@@ -99,7 +99,22 @@ void StadisticsPrint (Stadistics_t stats){
     
 }
 
-uint8_t ScoreCalculation(Stadistics_t *stats);
+uint8_t ScoreCalculation(Stadistics_t *stats){
+    uint8_t final_score;
+    //Precision score
+    float precision_score = 1.0f - (float)stats->failed_clicks/MAX_CLICKS;
+    //Duration score
+    float duration_score = 1.0f - (float)stats->game_duration_total/MAX_DURATION;
+
+    if (precision_score < 0) precision_score = 0;
+    if (duration_score < 0) duration_score = 0;
+
+    float raw_score = precision_score * 0.3f + duration_score * 0.7f;
+    
+    final_score = (uint8_t)(raw_score * 64);
+
+    return final_score;
+}
 
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
@@ -216,23 +231,6 @@ void vBitrisTask(void *pvParameters){
                 break;
         }
     }
-}
-
-uint8_t ScoreCalculation(Stadistics_t *stats){
-    uint8_t final_score;
-    //Precision score
-    float precision_score = 1.0f - (float)stats->failed_clicks/MAX_CLICKS;
-    //Duration score
-    float duration_score = 1.0f - (float)stats->game_duration_total/MAX_DURATION;
-
-    if (precision_score < 0) precision_score = 0;
-    if (duration_score < 0) duration_score = 0;
-
-    float raw_score = precision_score * 0.3f + duration_score * 0.7f;
-    
-    final_score = (uint8_t)(raw_score * 64);
-
-    return final_score;
 }
 
 void RunApp(void)
