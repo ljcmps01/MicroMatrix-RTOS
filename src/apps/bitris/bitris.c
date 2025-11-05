@@ -99,6 +99,8 @@ void StadisticsPrint (Stadistics_t stats){
     
 }
 
+uint8_t ScoreCalculation(Stadistics_t *stats);
+
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
     new_bitris.pos=0;
@@ -190,7 +192,7 @@ void vBitrisTask(void *pvParameters){
                 bitris.state=BITRIS_STALL;
                 break;
             case BITRIS_STALL:
-                bitris.gamescreen[0]=(255-stadistics.game_duration_total)*8/255;
+                bitris.gamescreen[0]=ScoreCalculation(&stadistics);
                 load_output(matrix,bitris.gamescreen);
                 vTaskDelay(pdMS_TO_TICKS(100));
                 break;
@@ -198,6 +200,23 @@ void vBitrisTask(void *pvParameters){
                 break;
         }
     }
+}
+
+uint8_t ScoreCalculation(Stadistics_t *stats){
+    uint8_t final_score;
+    //Precision score
+    float precision_score = 1.0f - (float)stats->failed_clicks/MAX_CLICKS;
+    //Duration score
+    float duration_score = 1.0f - (float)stats->game_duration_total/MAX_DURATION;
+
+    if (precision_score < 0) precision_score = 0;
+    if (duration_score < 0) duration_score = 0;
+
+    float raw_score = precision_score * 0.3f + duration_score * 0.7f;
+    
+    final_score = (uint8_t)(raw_score * 64);
+
+    return final_score;
 }
 
 void RunApp(void)
