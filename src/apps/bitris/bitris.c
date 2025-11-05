@@ -132,6 +132,22 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
     }
 }
 
+void BitrisScore(uint16_t score){
+    uint8_t full_rows = score / 8;
+    uint8_t remainder = score % 8;
+
+    for (size_t i = 0; i < full_rows; i++)
+    {
+        bitris.gamescreen[i] = 0xFF;
+    }
+    if (full_rows < 8)
+    {
+        bitris.gamescreen[full_rows] = (1 << remainder) - 1;
+    }
+    
+    
+}
+
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
     Stadistics_t stadistics = StadisticsInit();
@@ -192,7 +208,7 @@ void vBitrisTask(void *pvParameters){
                 bitris.state=BITRIS_STALL;
                 break;
             case BITRIS_STALL:
-                bitris.gamescreen[0]=ScoreCalculation(&stadistics);
+                BitrisScore(ScoreCalculation(&stadistics));
                 load_output(matrix,bitris.gamescreen);
                 vTaskDelay(pdMS_TO_TICKS(100));
                 break;
