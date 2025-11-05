@@ -4,6 +4,9 @@
 #define SPEED 100
 #define MAX_LEVEL 8
 
+#define MAX_CLICKS 100
+#define MAX_DURATION 300
+
 /*TODO:
 - Implement lives
 - Implement score   (Could be done through RTT until fonts is implemented)
@@ -25,7 +28,8 @@ typedef enum {
     BITRIS_FALLING,
     BITRIS_LANDED,
     BITRIS_CLEARING,
-    BITRIS_GAMEOVER
+    BITRIS_GAMEOVER,
+    BITRIS_STALL
 }BitrisState_t;
 
 
@@ -113,7 +117,13 @@ BitrisScreen_t bitris;
 void ButtonHandler(const Button *btn, ButtonEvent_t event){
     switch(event) {
         case BUTTON_EVENT_PRESS:
-            bitris.state = BITRIS_FALLING;
+            if (bitris.state == BITRIS_STALL) {
+                bitris = BitrisInit();
+            }
+            else {
+                bitris.state = BITRIS_FALLING;
+            }
+            break;
         default:
             break;
     }
@@ -176,7 +186,12 @@ void vBitrisTask(void *pvParameters){
                 stadistics = StadisticsInit();
                 bitris = BitrisInit();
 
-                bitris.state=BITRIS_IDLE;
+                bitris.state=BITRIS_STALL;
+                break;
+            case BITRIS_STALL:
+                bitris.gamescreen[0]=(255-stadistics.game_duration_total)*8/255;
+                load_output(matrix,bitris.gamescreen);
+                vTaskDelay(pdMS_TO_TICKS(100));
                 break;
             default:
                 break;
