@@ -5,8 +5,8 @@
 #define MAX_LEVEL 8
 
 //soft limits for score calculation
-#define MAX_CLICKS 300000
-#define MAX_DURATION 300
+#define MAX_CLICKS 100
+#define MAX_DURATION 300000
 
 /*TODO:
 - Implement lives
@@ -102,9 +102,9 @@ void StadisticsPrint (Stadistics_t stats){
 uint8_t ScoreCalculation(Stadistics_t *stats){
     uint8_t final_score;
     //Precision score
-    float precision_score = 1.0f - (float)stats->failed_clicks/MAX_CLICKS;
-    //Duration score
-    float duration_score = 1.0f - (float)stats->game_duration_total/MAX_DURATION;
+    float precision_score = 1.0f - (float)stats->failed_clicks/(float)MAX_CLICKS;
+    //Duration score (convert milliseconds to seconds)
+    float duration_score = 1.0f - (float)(stats->game_duration_total)/(float)MAX_DURATION;
 
     if (precision_score < 0) precision_score = 0;
     if (duration_score < 0) duration_score = 0;
@@ -217,14 +217,15 @@ void vBitrisTask(void *pvParameters){
                 //Closes stats
                 stadistics.game_duration_total = (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total);
                 StadisticsPrint(stadistics);
-                stadistics = StadisticsInit();
                 bitris = BitrisInit();
-
+                BitrisScore(ScoreCalculation(&stadistics));
+                stadistics = StadisticsInit();
+                
                 bitris.state=BITRIS_STALL;
                 break;
-            case BITRIS_STALL:
-                BitrisScore(ScoreCalculation(&stadistics));
+                case BITRIS_STALL:
                 load_output(matrix,bitris.gamescreen);
+                
                 vTaskDelay(pdMS_TO_TICKS(100));
                 break;
             default:
