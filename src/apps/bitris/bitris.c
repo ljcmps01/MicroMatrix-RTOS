@@ -2,6 +2,11 @@
 #include "common.h"
 
 #define SPEED 100
+#define MAX_LEVEL 8
+
+//soft limits for score calculation
+#define MAX_CLICKS 100
+#define MAX_DURATION 300000
 
 /*TODO:
 - Implement lives
@@ -24,7 +29,8 @@ typedef enum {
     BITRIS_FALLING,
     BITRIS_LANDED,
     BITRIS_CLEARING,
-    BITRIS_GAMEOVER
+    BITRIS_GAMEOVER,
+    BITRIS_STALL
 }BitrisState_t;
 
 
@@ -32,17 +38,90 @@ typedef struct {
     uint8_t pos;
     Direction_t direction;
     uint8_t level;
-    uint8_t gamescreen[8];
+    uint8_t gamescreen[MAX_LEVEL];
     BitrisState_t state;
     uint8_t max_level;
 } BitrisScreen_t;
+
+typedef struct {
+    uint32_t game_duration_total;
+    uint32_t game_duration_per_level[MAX_LEVEL];
+
+    uint16_t game_clicks_total;
+    uint16_t game_clicks_per_level[MAX_LEVEL];
+    uint16_t failed_clicks;
+
+    uint16_t player_precision;
+}Stadistics_t;
+
+Stadistics_t StadisticsInit (){
+    Stadistics_t new_stats;
+    new_stats.game_duration_total = pdTICKS_TO_MS(xTaskGetTickCount());
+    new_stats.game_clicks_total = 0;
+
+    new_stats.game_duration_per_level[0] = 0;
+
+    for (uint8_t i = 0; i < MAX_LEVEL; i++)
+    {
+        new_stats.game_clicks_per_level[i] = 0;
+    }
+
+    new_stats.failed_clicks = 0;
+    
+    new_stats.player_precision = 0;
+
+    return new_stats;
+}
+
+void StadisticsPrint (Stadistics_t stats){
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_WriteString(0,"\tGAME STATS\n");
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_printf(0,"Game duration:\t\t%ds\n", stats.game_duration_total/1000);
+    SEGGER_RTT_printf(0,"Total clicks made:\t%d\n", stats.game_clicks_total);
+    SEGGER_RTT_printf(0,"Failed clicks:\t\t%d\n", stats.failed_clicks);
+    SEGGER_RTT_printf(0,"Precision rate:\t\t%d%%\n\n", stats.failed_clicks*100/stats.game_clicks_total);
+
+
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    SEGGER_RTT_WriteString(0,"\tPER LEVEL STATS\n");
+    SEGGER_RTT_WriteString(0,"=================================\n");
+    for (uint8_t i = 0; i < MAX_LEVEL-1; i++)
+    {
+        vTaskDelay(pdMS_TO_TICKS(25));
+        SEGGER_RTT_printf(0,"\t\tLEVEL  %d\n",i);
+        SEGGER_RTT_WriteString(0,"=================================\n");
+        SEGGER_RTT_printf(0,"Game duration:\t%ds\n", stats.game_duration_per_level[i]/1000);
+        SEGGER_RTT_printf(0,"Game clicks:\t%d\n", stats.game_clicks_per_level[i]);
+        SEGGER_RTT_WriteString(0,"=================================\n");
+            
+    }
+    
+}
+
+uint8_t ScoreCalculation(Stadistics_t *stats){
+    uint8_t final_score;
+    //Precision score
+    float precision_score = 1.0f - (float)stats->failed_clicks/(float)MAX_CLICKS;
+    //Duration score (convert milliseconds to seconds)
+    float duration_score = 1.0f - (float)(stats->game_duration_total)/(float)MAX_DURATION;
+
+    if (precision_score < 0) precision_score = 0;
+    if (duration_score < 0) duration_score = 0;
+
+    float raw_score = precision_score * 0.3f + duration_score * 0.7f;
+    
+    final_score = (uint8_t)(raw_score * 64);
+
+    return final_score;
+}
 
 BitrisScreen_t BitrisInit(){
     BitrisScreen_t new_bitris;
     new_bitris.pos=0;
     new_bitris.level = 1;
-    new_bitris.max_level=8;
-    for(size_t i=0;i<8;++i){
+    new_bitris.max_level=MAX_LEVEL;
+    for(size_t i=0;i<MAX_LEVEL;++i){
         new_bitris.gamescreen[i] = 0x00;
     }
     new_bitris.state = BITRIS_IDLE;
@@ -56,14 +135,37 @@ BitrisScreen_t bitris;
 void ButtonHandler(const Button *btn, ButtonEvent_t event){
     switch(event) {
         case BUTTON_EVENT_PRESS:
-            bitris.state = BITRIS_FALLING;
+            if (bitris.state == BITRIS_STALL) {
+                bitris = BitrisInit();
+            }
+            else {
+                bitris.state = BITRIS_FALLING;
+            }
+            break;
         default:
             break;
     }
 }
 
+void BitrisScore(uint16_t score){
+    uint8_t full_rows = score / 8;
+    uint8_t remainder = score % 8;
+
+    for (size_t i = 0; i < full_rows; i++)
+    {
+        bitris.gamescreen[i] = 0xFF;
+    }
+    if (full_rows < 8)
+    {
+        bitris.gamescreen[full_rows] = (1 << remainder) - 1;
+    }
+    
+    
+}
+
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
+    Stadistics_t stadistics = StadisticsInit();
     for(;;)
     {
         switch(bitris.state){
@@ -87,26 +189,44 @@ void vBitrisTask(void *pvParameters){
                     bitris.gamescreen[i] = 0x00;
                 }
                 bitris.state=BITRIS_LANDED;    
+                stadistics.game_clicks_total++;
+                stadistics.game_clicks_per_level[bitris.level-1]++;
                 break;
 
             case BITRIS_LANDED:         // Player landed
+                uint8_t hit = bitris.gamescreen[bitris.max_level-bitris.level];
                 bitris.gamescreen[bitris.max_level-bitris.level]|=bitris.gamescreen[0];
+
+                if(hit == bitris.gamescreen[bitris.max_level-bitris.level])
+                    stadistics.failed_clicks++;
+
                 load_output(matrix,bitris.gamescreen);
                 bitris.state=BITRIS_CLEARING;    
                 break;
 
             case BITRIS_CLEARING:       // Clearing lines
-                if(bitris.gamescreen[bitris.max_level-bitris.level]==255)
+                if(bitris.gamescreen[bitris.max_level-bitris.level]==255){
+                    stadistics.game_duration_per_level[bitris.level-1] = bitris.level == 0?
+                        (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total):
+                        (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_per_level[bitris.level-2]);
                     bitris.level++;
-                bitris.state=bitris.level==8?BITRIS_GAMEOVER:BITRIS_IDLE;    
+                }
+                bitris.state=bitris.level==MAX_LEVEL?BITRIS_GAMEOVER:BITRIS_IDLE;    
                 break;
             case BITRIS_GAMEOVER:       // Game over
-                bitris.level=0;
-                for(size_t i=1;i<(bitris.max_level-bitris.level);++i){
-                    bitris.gamescreen[i] = 0x00;
-                }
-                bitris.level++;
-                bitris.state=BITRIS_IDLE;
+                //Closes stats
+                stadistics.game_duration_total = (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total);
+                StadisticsPrint(stadistics);
+                bitris = BitrisInit();
+                BitrisScore(ScoreCalculation(&stadistics));
+                stadistics = StadisticsInit();
+                
+                bitris.state=BITRIS_STALL;
+                break;
+                case BITRIS_STALL:
+                load_output(matrix,bitris.gamescreen);
+                
+                vTaskDelay(pdMS_TO_TICKS(100));
                 break;
             default:
                 break;

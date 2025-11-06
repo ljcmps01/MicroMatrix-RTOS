@@ -7,7 +7,6 @@ if(DEFINED APP_TYPE)
     set(APP_PATH src/apps/${APP_NAME})
 endif()
 
-
 set(STM32_HAL_DRIVER_PATH "external/drivers")
 
 set(HAL_SRC
