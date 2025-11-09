@@ -5,6 +5,8 @@
 #define MAX_LEVEL 8
 #define MAX_SNAKE_LEN 32
 
+#define SNAKE_INITIAL_LEN 1
+
 typedef enum {
     HORIZONTAL,
     VERTICAL
@@ -33,12 +35,18 @@ typedef struct{
     uint8_t seg_y[MAX_SNAKE_LEN];
 }Snake_t;
 
+typedef struct{
+    uint8_t x;
+    uint8_t y;
+} Dot_t;
+
 typedef struct {
     Snake_t snake;
     SnakeState_t state;
     uint8_t level;
     uint8_t gamescreen[MAX_LEVEL];
     uint8_t max_level;
+    Dot_t food;
 } SnakeScreen_t;
 
 static void SnakeRender(SnakeScreen_t *g){
@@ -48,6 +56,9 @@ static void SnakeRender(SnakeScreen_t *g){
         uint8_t y = g->snake.seg_y[i] & 0x7;
         g->gamescreen[y] |= (uint8_t)(1u<<x);
     }
+    uint8_t food_x = g->food.x & 0x7;
+    uint8_t food_y = g->food.y & 0x7;
+    g->gamescreen[food_y] |= (uint8_t)(1u<<food_x);
     load_output(GetMatrix(), g->gamescreen);
 }
 
@@ -88,9 +99,22 @@ static void SnakeGrow(SnakeScreen_t *g){
     }
 }
 
+static void NewFood(SnakeScreen_t *g){
+    // Simple random placement, no collision checking for brevity
+    srand(xTaskGetTickCount());
+    g->food.x = rand() % 8;
+    g->food.y = rand() % 8;
+}
+
+static int CheckFoodCollision(SnakeScreen_t *g){
+    Snake_t *s = &g->snake;
+    
+    return (s->head_x == g->food.x && s->head_y == g->food.y);
+}
+
 Snake_t SnakeInit(){
     Snake_t new_snake;
-    new_snake.length = 3;
+    new_snake.length = SNAKE_INITIAL_LEN;
     new_snake.head_x = 4;
     new_snake.head_y = 4;
     new_snake.direction = VERTICAL;
@@ -106,12 +130,15 @@ Snake_t SnakeInit(){
 SnakeScreen_t SnakeGameInit(){
     SnakeScreen_t new_snake_game;
     new_snake_game.snake = SnakeInit();
-    new_snake_game.state = SNAKE_MOVING;
+    new_snake_game.state = SNAKE_STALL;
     new_snake_game.level = 1;
     for(size_t i=0;i<MAX_LEVEL;++i){
         new_snake_game.gamescreen[i] = 0x00;
     }
     new_snake_game.max_level = MAX_LEVEL;
+
+    // Place food at a fixed position for simplicity
+    NewFood(&new_snake_game);
     return new_snake_game;
 }
 
@@ -144,6 +171,11 @@ void vSnakeTask(void *pvParameters){
     for(;;){
         switch(snake_game.state){
             case SNAKE_MOVING:
+                if(CheckFoodCollision(&snake_game)){
+                    SEGGER_RTT_WriteString(0, "Food eaten!\n");
+                    snake_game.state = SNAKE_GROWING;
+                    NewFood(&snake_game);
+                }
                 SnakeAdvance(&snake_game);
                 SnakeRender(&snake_game);
                 break;
