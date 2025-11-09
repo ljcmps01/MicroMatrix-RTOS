@@ -26,54 +26,6 @@ void vBlinkTask(void *pvParameters)
     }
 }
 
-/* RTT command handler task */
-void vRTTTask(void *pvParameters)
-{
-    char buffer[32];
-    
-    SEGGER_RTT_WriteString(0, "RTT control task started.\n");
-    SEGGER_RTT_WriteString(0, "Commands: on | off | toggle | manual | blink\n");
-
-    for (;;)
-    {
-        // Non-blocking read from RTT channel 0
-        int r = SEGGER_RTT_Read(0, buffer, sizeof(buffer)-1);
-        if (r > 0) {
-            buffer[r] = '\0'; // null terminate
-
-            if (strncmp(buffer, "on", 2) == 0) {
-                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
-                SEGGER_RTT_WriteString(0, "LED ON\n");
-            }
-            else if (strncmp(buffer, "off", 3) == 0) {
-                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
-                SEGGER_RTT_WriteString(0, "LED OFF\n");
-            }
-            else if (strncmp(buffer, "toggle", 6) == 0) {
-                HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_8);
-                SEGGER_RTT_WriteString(0, "LED TOGGLED\n");
-            }
-            else if (strncmp(buffer, "manual", 6) == 0) {
-                if (blinkHandle != NULL) {
-                    vTaskSuspend(blinkHandle);
-                    SEGGER_RTT_WriteString(0, "Blink task suspended. Manual control.\n");
-                }
-            }
-            else if (strncmp(buffer, "blink", 5) == 0) {
-                if (blinkHandle != NULL) {
-                    vTaskResume(blinkHandle);
-                    SEGGER_RTT_WriteString(0, "Blink task resumed.\n");
-                }
-            }
-            else {
-                SEGGER_RTT_WriteString(0, "Unknown command.\n");
-            }
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(100)); // Poll RTT every 100 ms
-    }
-}
-
 int main(void)
 {
     HAL_Init();
@@ -85,9 +37,6 @@ int main(void)
     SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
 
     MX_GPIO_Init();
-
-    // xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
-    xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
 
     #if COUNTER
     SEGGER_RTT_WriteString(0, "Start Counter App\n");
