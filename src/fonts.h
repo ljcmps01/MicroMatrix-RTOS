@@ -4,5 +4,5 @@
 #include <stdint.h>
 
 extern uint8_t digits[10][8];
-extern uint8_t letters[10][8];
+extern uint8_t letters[52][8];
 #endif

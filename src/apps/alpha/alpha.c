@@ -12,17 +12,17 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
         switch(event) {
             case BUTTON_EVENT_SHORT: 
                 SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
-                if(counter<9) counter++;
+                if(counter<52) counter++;
                 else counter=0;
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
-                counter=9;
+                counter=52;
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
                 if(counter>0) counter--;
-                else counter=9;
+                else counter=52;
                 break;
             default: break;
         }
@@ -31,7 +31,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
             case BUTTON_EVENT_SHORT: 
                 SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
                 if(counter>0) counter--;
-                else counter=9;
+                else counter=52;
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
@@ -39,7 +39,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
-                if(counter<9) counter++;
+                if(counter<52) counter++;
                 else counter=0;
                 break;
             default: break;
