@@ -6,6 +6,8 @@
 #include "counter.h"
 #elif BITRIS
 #include "bitris.h"
+#elif ALPHA
+#include "alpha.h"
 #endif
 
 void SystemClock_Config(void);
@@ -95,6 +97,9 @@ int main(void)
     #elif BITRIS
     SEGGER_RTT_WriteString(0, "Start Bitris App\n");
     RunApp(); // Start the bitris app
+    #elif ALPHA
+    SEGGER_RTT_WriteString(0, "Start Alpha App\n");
+    RunApp(); // Start the alpha app
     #else
     SEGGER_RTT_WriteString(0, "No app selected.\n");
     #endif
