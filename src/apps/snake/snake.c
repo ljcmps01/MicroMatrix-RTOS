@@ -7,6 +7,13 @@
 
 #define SNAKE_INITIAL_LEN 1
 
+//TODO:
+// - Improve overall game feeling
+// - Add score system (through RTT for now)
+// - Add status animations (start, gameover, eating, etc)
+// - Add status led indications
+// - Implement High Score storage (EEPROM?)
+
 typedef enum {
     HORIZONTAL,
     VERTICAL
