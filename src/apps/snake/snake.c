@@ -56,7 +56,6 @@ SnakeScreen_t SnakeGameInit(){
     for(size_t i=0;i<MAX_LEVEL;++i){
         new_snake_game.gamescreen[i] = 0x00;
     }
-    new_snake_game.gamescreen[new_snake_game.snake.y] = (1 << new_snake_game.snake.x);
     new_snake_game.max_level = MAX_LEVEL;
     return new_snake_game;
 }
@@ -87,7 +86,11 @@ void vSnakeTask(void *pvParameters){
                     else
                         snake_game.snake.x = (snake_game.snake.x - 1 + 8) % 8;
                 }
-                snake_game.gamescreen[snake_game.snake.y] |= (1 << snake_game.snake.x);
+                // Update game screen
+                for(size_t i=0;i<MAX_LEVEL;++i){
+                    snake_game.gamescreen[i] = 0x00;
+                }
+                snake_game.gamescreen[snake_game.snake.y] = (snake_game.snake.length << snake_game.snake.x);
                 load_output(GetMatrix(), snake_game.gamescreen);
                 break;
             case SNAKE_GROWING:
