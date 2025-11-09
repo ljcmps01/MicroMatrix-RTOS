@@ -18,7 +18,7 @@
                 "enabled": true,
                 "samplesPerSecond": 4
             },
-            "runToEntryPoint": "main",
+            // "runToEntryPoint": "main",   // Uncomment to run to main
             "rttConfig": {
                 "enabled": true,
                 "clearSearch": false,
