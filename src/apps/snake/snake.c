@@ -9,7 +9,6 @@
 
 //TODO:
 // - Improve overall game feeling
-// - Add score system (through RTT for now)
 // - Add status animations (start, gameover, eating, etc)
 // - Add status led indications
 // - Implement High Score storage (EEPROM?)
@@ -154,7 +153,6 @@ SnakeScreen_t SnakeGameInit(){
     }
     new_snake_game.max_level = MAX_LEVEL;
 
-    // Place food at a fixed position for simplicity
     NewFood(&new_snake_game);
     return new_snake_game;
 }
@@ -183,6 +181,28 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
     }
 }
 
+void SnakeScore(uint16_t score){
+    uint8_t full_rows = score / 8;
+    uint8_t remainder = score % 8;
+
+    char score_msg[20];
+    char *pScore = __itoa(score,score_msg, 10);
+    SEGGER_RTT_WriteString(0, "#########################\n");
+    SEGGER_RTT_WriteString(0, "#\tScore: ");
+    SEGGER_RTT_WriteString(0, pScore);
+    SEGGER_RTT_WriteString(0, "\t#\n");
+    SEGGER_RTT_WriteString(0, "#########################\n");
+
+    for (size_t i = 0; i < full_rows; i++)
+    {
+        snake_game.gamescreen[i] = 0xFF;
+    }
+    if (full_rows < 8)
+    {
+        snake_game.gamescreen[full_rows] = (1 << remainder) - 1;
+    }
+    load_output(GetMatrix(), snake_game.gamescreen);
+}
 
 void vSnakeTask(void *pvParameters){
     for(;;){
@@ -207,8 +227,7 @@ void vSnakeTask(void *pvParameters){
             case SNAKE_IDLE:
             case SNAKE_GAMEOVER:
                 SEGGER_RTT_WriteString(0, "Game Over!\n");
-                snake_game = SnakeGameInit();
-                SnakeRender(&snake_game);
+                SnakeScore(snake_game.snake.length);
                 snake_game.state = SNAKE_STALL;
             case SNAKE_STALL:
             default:
