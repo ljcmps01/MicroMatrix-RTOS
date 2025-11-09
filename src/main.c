@@ -14,59 +14,6 @@ static void MX_GPIO_Init(void);
 TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
 
-Button sw2,sw3;
-Matrix_t pantalla;
-
-uint8_t counter=0;
-
-
-void ButtonHandler(const Button *btn, ButtonEvent_t event)
-{
-    if (btn == &sw2) {
-        switch(event) {
-            case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
-                if(counter<9) counter++;
-                else counter=0;
-                load_output(&pantalla,digits[counter]);
-                break;
-            case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
-                counter=0;
-                load_output(&pantalla,digits[counter]);
-                break;
-            case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
-                if(counter>0) counter--;
-                else counter=9;
-                load_output(&pantalla,digits[counter]);
-                break;
-            default: break;
-        }
-    } else if (btn == &sw3) {
-        switch(event) {
-            case BUTTON_EVENT_SHORT: 
-                SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
-                if(counter>0) counter--;
-                else counter=9;
-                load_output(&pantalla,digits[counter]);
-                break;
-            case BUTTON_EVENT_LONG:  
-                SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
-                counter=9;
-                load_output(&pantalla,digits[counter]);                
-                break;
-            case BUTTON_EVENT_DOUBLE:
-                SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
-                if(counter<9) counter++;
-                else counter=0;
-                load_output(&pantalla,digits[counter]);
-                break;
-            default: break;
-        }
-    }
-}
-
 /* Blink task */
 void vBlinkTask(void *pvParameters)
 {
@@ -178,36 +125,6 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
     SEGGER_RTT_printf(0, "Stack overflow in task: %s\n", pcTaskName);
     taskDISABLE_INTERRUPTS();   
     for(;;); // halt here
-}
-
-int main(void)
-{
-    HAL_Init();
-    SystemClock_Config();
-
-    Matrix_Init(&pantalla,8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
-    load_output(&pantalla,digits[counter]);
-
-    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
-    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
-
-    SEGGER_RTT_Init();  // <--- Initialize RTT buffer
-    SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
-
-    MX_GPIO_Init();
-    /* Create blink task */    
-    SEGGER_RTT_printf(0, "Free heap before tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
-
-    xTaskCreate(vBlinkTask, "Blink", 128, NULL, 1, &blinkHandle);
-    xTaskCreate(vRTTTask, "RTT", 256, NULL, 2, NULL);
-    xTaskCreate(vMatrixMultiplexTask, "MatrixMux", 256, &pantalla, 4, NULL);
-    SEGGER_RTT_printf(0, "Free heap after tasks: %u\n", (unsigned)xPortGetFreeHeapSize());
-
-    /* Start scheduler */
-    vTaskStartScheduler();
-
-    /* Should never reach here */
-    while (1) {}
 }
 
 /* System clock config (48 MHz HSI/PLL for STM32F051) */
