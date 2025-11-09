@@ -6,6 +6,8 @@
 #include "counter.h"
 #elif BITRIS
 #include "bitris.h"
+#elif SNAKE
+#include "snake.h"
 #endif
 
 void SystemClock_Config(void);
@@ -34,7 +36,7 @@ int main(void)
     Matrix_Init(GetMatrix(),8,8,FILAS_GPIO_Port,COLUMNAS_GPIO_Port,FILAS_Pin,COLUMNAS_Pin,0);
 
     SEGGER_RTT_Init();  // <--- Initialize RTT buffer
-    SEGGER_RTT_WriteString(0, "GPIO initialized. Type commands to interact!\n");
+    SEGGER_RTT_WriteString(0, "GPIO and RTT initialized.\n");
 
     MX_GPIO_Init();
 
@@ -44,6 +46,9 @@ int main(void)
     #elif BITRIS
     SEGGER_RTT_WriteString(0, "Start Bitris App\n");
     RunApp(); // Start the bitris app
+    #elif SNAKE
+    SEGGER_RTT_WriteString(0, "Start Snake App\n");
+    RunApp(); // Start the snake app
     #else
     SEGGER_RTT_WriteString(0, "No app selected.\n");
     #endif
