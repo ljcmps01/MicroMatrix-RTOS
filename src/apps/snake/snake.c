@@ -1,8 +1,9 @@
 #include "snake.h"
 #include "common.h"
 
-#define SPEED 500
+#define SPEED 250
 #define MAX_LEVEL 8
+#define MAX_SNAKE_LEN 32
 
 typedef enum {
     HORIZONTAL,
@@ -10,8 +11,8 @@ typedef enum {
 }Direction_t;
 
 typedef enum{
-    POSITIVE,
-    NEGATIVE
+    NEGATIVE,
+    POSITIVE
 }Sense_t;
 
 typedef enum {
@@ -23,11 +24,13 @@ typedef enum {
 }SnakeState_t;
 
 typedef struct{
-    uint8_t x;
-    uint8_t y;
     uint8_t length;
+    uint8_t head_x;
+    uint8_t head_y;
     Direction_t direction;
     Sense_t sense;
+    uint8_t seg_x[MAX_SNAKE_LEN];
+    uint8_t seg_y[MAX_SNAKE_LEN];
 }Snake_t;
 
 typedef struct {
@@ -38,13 +41,65 @@ typedef struct {
     uint8_t max_level;
 } SnakeScreen_t;
 
+static void SnakeRender(SnakeScreen_t *g){
+    for(uint8_t r=0;r<MAX_LEVEL;++r) g->gamescreen[r]=0;
+    for(uint8_t i=0;i<g->snake.length;++i){
+        uint8_t x = g->snake.seg_x[i] & 0x7;
+        uint8_t y = g->snake.seg_y[i] & 0x7;
+        g->gamescreen[y] |= (uint8_t)(1u<<x);
+    }
+    load_output(GetMatrix(), g->gamescreen);
+}
+
+static void SnakeAdvance(SnakeScreen_t *g){
+    Snake_t *s = &g->snake;
+
+    // Compute new head
+    int nx = s->head_x;
+    int ny = s->head_y;
+    if(s->direction == VERTICAL){
+        ny += (s->sense == POSITIVE) ? 1 : -1;
+    } else {
+        nx += (s->sense == POSITIVE) ? 1 : -1;
+    }
+    nx = (nx + 8) % 8;
+    ny = (ny + 8) % 8;
+
+    // Shift body backwards
+    for(int i = s->length - 1; i > 0; --i){
+        s->seg_x[i] = s->seg_x[i-1];
+        s->seg_y[i] = s->seg_y[i-1];
+    }
+
+    // Insert new head
+    s->seg_x[0] = (uint8_t)nx;
+    s->seg_y[0] = (uint8_t)ny;
+    s->head_x = (uint8_t)nx;
+    s->head_y = (uint8_t)ny;
+}
+
+static void SnakeGrow(SnakeScreen_t *g){
+    Snake_t *s = &g->snake;
+    if(s->length < MAX_SNAKE_LEN){
+        // Duplicate last segment to extend tail
+        s->seg_x[s->length] = s->seg_x[s->length - 1];
+        s->seg_y[s->length] = s->seg_y[s->length - 1];
+        s->length++;
+    }
+}
+
 Snake_t SnakeInit(){
     Snake_t new_snake;
-    new_snake.x = 4;
-    new_snake.y = 4;
-    new_snake.length = 1;
+    new_snake.length = 3;
+    new_snake.head_x = 4;
+    new_snake.head_y = 4;
     new_snake.direction = VERTICAL;
     new_snake.sense = POSITIVE;
+    // Initialize straight vertical body
+    for(uint8_t i=0;i<new_snake.length;++i){
+        new_snake.seg_x[i] = new_snake.head_x;
+        new_snake.seg_y[i] = (uint8_t)((new_snake.head_y - i + 8)%8);
+    }
     return new_snake;
 }
 
@@ -60,48 +115,47 @@ SnakeScreen_t SnakeGameInit(){
     return new_snake_game;
 }
 
+Button sw2,sw3;
 SnakeScreen_t snake_game;
 
+void ButtonHandler(const Button *btn, ButtonEvent_t event){
+    switch(event) {
+        case BUTTON_EVENT_PRESS:
+            if (snake_game.state == SNAKE_STALL) {
+                snake_game = SnakeGameInit();
+                snake_game.state = SNAKE_MOVING;
+            }
+            else {
+                if(snake_game.snake.sense^snake_game.snake.direction){
+                    snake_game.snake.sense = (btn == &sw2) ? NEGATIVE : POSITIVE;
+                } else {
+                    snake_game.snake.sense = (btn == &sw2) ? POSITIVE : NEGATIVE;
+                }
+                snake_game.snake.direction = (snake_game.snake.direction == VERTICAL) ? HORIZONTAL : VERTICAL;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+
 void vSnakeTask(void *pvParameters){
-    // Placeholder for Snake game task
     for(;;){
         switch(snake_game.state){
-            case SNAKE_IDLE:
-                // Handle idle state
-                break;
             case SNAKE_MOVING:
-                if (snake_game.snake.direction)
-                {
-                    // Vertical movement
-                    if (snake_game.snake.sense == POSITIVE)
-                        snake_game.snake.y = (snake_game.snake.y + 1) % 8;
-                    else
-                        snake_game.snake.y = (snake_game.snake.y - 1 + 8) % 8;
-                }
-                else
-                {
-                    // Horizontal movement
-                    if (snake_game.snake.sense == POSITIVE)
-                        snake_game.snake.x = (snake_game.snake.x + 1) % 8;
-                    else
-                        snake_game.snake.x = (snake_game.snake.x - 1 + 8) % 8;
-                }
-                // Update game screen
-                for(size_t i=0;i<MAX_LEVEL;++i){
-                    snake_game.gamescreen[i] = 0x00;
-                }
-                snake_game.gamescreen[snake_game.snake.y] = (snake_game.snake.length << snake_game.snake.x);
-                load_output(GetMatrix(), snake_game.gamescreen);
+                SnakeAdvance(&snake_game);
+                SnakeRender(&snake_game);
                 break;
             case SNAKE_GROWING:
-                // Handle growing state
+                SnakeAdvance(&snake_game);
+                SnakeGrow(&snake_game);
+                SnakeRender(&snake_game);
+                snake_game.state = SNAKE_MOVING;
                 break;
+            case SNAKE_IDLE:
             case SNAKE_GAMEOVER:
-                // Handle game over state
-                break;
             case SNAKE_STALL:
-                // Handle stall state
-                break;
             default:
                 break;
         }
@@ -117,5 +171,7 @@ void RunApp(void)
     SEGGER_RTT_WriteString(0, "Snake game started.\n");
     // Game loop and logic would go here
     xTaskCreate(vSnakeTask, "SnakeTask", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
+    Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
 
 }
