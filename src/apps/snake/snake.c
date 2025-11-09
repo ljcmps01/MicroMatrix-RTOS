@@ -112,6 +112,16 @@ static int CheckFoodCollision(SnakeScreen_t *g){
     return (s->head_x == g->food.x && s->head_y == g->food.y);
 }
 
+static int CheckSelfCollision(SnakeScreen_t *g){
+    Snake_t *s = &g->snake;
+    for(uint8_t i=1;i<s->length;++i){
+        if(s->head_x == s->seg_x[i] && s->head_y == s->seg_y[i]){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 Snake_t SnakeInit(){
     Snake_t new_snake;
     new_snake.length = SNAKE_INITIAL_LEN;
@@ -171,22 +181,28 @@ void vSnakeTask(void *pvParameters){
     for(;;){
         switch(snake_game.state){
             case SNAKE_MOVING:
+                SnakeAdvance(&snake_game);
                 if(CheckFoodCollision(&snake_game)){
                     SEGGER_RTT_WriteString(0, "Food eaten!\n");
                     snake_game.state = SNAKE_GROWING;
                     NewFood(&snake_game);
                 }
-                SnakeAdvance(&snake_game);
+                else if(CheckSelfCollision(&snake_game)){
+                    snake_game.state = SNAKE_GAMEOVER;
+                }
                 SnakeRender(&snake_game);
                 break;
             case SNAKE_GROWING:
-                SnakeAdvance(&snake_game);
                 SnakeGrow(&snake_game);
                 SnakeRender(&snake_game);
                 snake_game.state = SNAKE_MOVING;
                 break;
             case SNAKE_IDLE:
             case SNAKE_GAMEOVER:
+                SEGGER_RTT_WriteString(0, "Game Over!\n");
+                snake_game = SnakeGameInit();
+                SnakeRender(&snake_game);
+                snake_game.state = SNAKE_STALL;
             case SNAKE_STALL:
             default:
                 break;
