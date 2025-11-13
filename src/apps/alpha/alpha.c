@@ -21,11 +21,8 @@ void load_char_to_screen(char* c){
     Matrix_t *m = GetMatrix();
     size_t a=strlen(c);
     for(int i=0; i<a; i++){
-        load_output(m,letters[counter]);
-        SEGGER_RTT_printf(0, "Loading char: %c\n", c[i]);
-        vTaskDelay(pdMS_TO_TICKS(500));
         counter=get_char(c[i]);
-        SEGGER_RTT_printf(0, "Loading char: %d\n", counter);
+        SEGGER_RTT_printf(0, "Loading char: %c  (index %d)\n", c[i],counter);
         if(counter!=-1){
             load_output(m,letters[counter]);
             vTaskDelay(pdMS_TO_TICKS(500));
