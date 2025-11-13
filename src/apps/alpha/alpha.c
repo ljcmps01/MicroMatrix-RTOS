@@ -19,7 +19,7 @@ int get_char(char c){
 
 void load_char_to_screen(char* c){
     Matrix_t *m = GetMatrix();
-    int a=3;
+    size_t a=strlen(c);
     for(int i=0; i<a; i++){
         load_output(m,letters[counter]);
         SEGGER_RTT_printf(0, "Loading char: %c\n", c[i]);
