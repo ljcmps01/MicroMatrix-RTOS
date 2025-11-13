@@ -115,7 +115,7 @@ uint8_t digits[10][8]={
 
 
 uint8_t letters[52][8]= {
-
+  
   // MAYÚSCULAS
   {
     0b00011000,
@@ -640,3 +640,4 @@ uint8_t letters[52][8]= {
     0b00000000,
   },
 };
+
