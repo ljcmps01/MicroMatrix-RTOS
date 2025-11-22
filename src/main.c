@@ -31,44 +31,6 @@ void vBlinkTask(void *pvParameters)
     }
 }
 
-/* Task to write data to flash periodically */
-void FlashWriteTask(void *pvParameters)
-{    
-    flash_data.status = 1;
-    
-    for(;;)
-    {
-            flash_data.counter++;
-            if (Flash_Save(&flash_data) == HAL_OK)
-            {
-                SEGGER_RTT_WriteString(0, "Flash write successful.\n");                   
-            }
-            else
-            {
-                SEGGER_RTT_WriteString(0, "Flash write failed.\n");
-            }
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }
-}
-
-/* Task to read data from flash periodically */
-void FlashReadTask(void *pvParameters)
-{
-    FlashData_t dataRead;
-    
-    for(;;)
-    {
-        FlashStatus_t status = Flash_Load(&dataRead);
-        if (status == FLASH_STATUS_OK)
-        {
-            SEGGER_RTT_printf(0, "Flash Read - Counter: %lu\n", 
-                dataRead.counter);
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(2000));
-    }
-}
-
 int main(void)
 {
     HAL_Init();
@@ -97,9 +59,6 @@ int main(void)
         {
             SEGGER_RTT_WriteString(0, "Flash data valid.\n");
         }
-        /* Create FreeRTOS tasks */
-        xTaskCreate(FlashWriteTask, "FlashWrite", 64, NULL, FLASH_WRITE_TASK_PRIORITY, NULL);
-        xTaskCreate(FlashReadTask, "FlashRead", 128, NULL, FLASH_READ_TASK_PRIORITY, NULL);
     }
     else
     {
