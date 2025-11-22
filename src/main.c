@@ -38,8 +38,6 @@ void FlashWriteTask(void *pvParameters)
     
     for(;;)
     {
-        if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
-        {
             flash_data.counter++;
             if (Flash_Save(&flash_data) == HAL_OK)
             {
@@ -49,9 +47,6 @@ void FlashWriteTask(void *pvParameters)
             {
                 SEGGER_RTT_WriteString(0, "Flash write failed.\n");
             }
-            xSemaphoreGive(xFlashMutex);
-        }
-        
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
@@ -63,13 +58,11 @@ void FlashReadTask(void *pvParameters)
     
     for(;;)
     {
-        if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
+        FlashStatus_t status = Flash_Load(&dataRead);
+        if (status == FLASH_STATUS_OK)
         {
-            FlashStatus_t status = Flash_Load(&dataRead);
             SEGGER_RTT_printf(0, "Flash Read - Counter: %lu\n", 
                 dataRead.counter);
-            
-            xSemaphoreGive(xFlashMutex);
         }
         
         vTaskDelay(pdMS_TO_TICKS(2000));

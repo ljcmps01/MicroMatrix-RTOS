@@ -64,8 +64,6 @@ uint8_t FlashData_Validate(FlashData_t *data)
     return 1;  /* Valid data */
 }
 
-/********************* METHOD 1: STM32 HAL Functions *********************/
-
 /* Erase flash page using HAL */
 HAL_StatusTypeDef Flash_Erase_HAL(uint32_t PageAddress)
 {
@@ -111,9 +109,6 @@ HAL_StatusTypeDef Flash_Write_HAL(uint32_t StartAddress, uint32_t *Data, uint16_
     return status;
 }
 
-
-/****************** Common Read Function ******************/
-
 /* Read data from flash memory (no HAL needed - direct memory access) */
 void Flash_Read_Data(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWords)
 {
@@ -126,41 +121,56 @@ void Flash_Read_Data(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWor
 }
 
 uint8_t Flash_Save(FlashData_t *data){
-    uint32_t writeBuffer[sizeof(FlashData_t) / sizeof(uint32_t) + 1];
-    HAL_StatusTypeDef status;
-    
-    data->checksum = FlashData_CalculateChecksum(data);
-            
-    memcpy(writeBuffer, data, sizeof(FlashData_t));
-            
-    status = Flash_Erase_HAL(FLASH_USER_START_ADDR);
-    if (status == HAL_OK)
+
+    if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
     {
-        status = Flash_Write_HAL(FLASH_USER_START_ADDR, 
-                                writeBuffer, 
-                                sizeof(FlashData_t) / sizeof(uint32_t) + 1);
-        if (status == HAL_OK);
+        uint32_t writeBuffer[sizeof(FlashData_t) / sizeof(uint32_t) + 1];
+        HAL_StatusTypeDef status;
+        
+        data->checksum = FlashData_CalculateChecksum(data);
+                
+        memcpy(writeBuffer, data, sizeof(FlashData_t));
+                
+        status = Flash_Erase_HAL(FLASH_USER_START_ADDR);
+        if (status == HAL_OK)
+        {
+            status = Flash_Write_HAL(FLASH_USER_START_ADDR, 
+                                    writeBuffer, 
+                                    sizeof(FlashData_t) / sizeof(uint32_t) + 1);
+        }
+
+        
+        xSemaphoreGive(xFlashMutex);
+        return status;
     }
-    return status;
+
+    return HAL_BUSY;
 }
 
 FlashStatus_t Flash_Load(FlashData_t *data){
-    uint32_t readBuffer[sizeof(FlashData_t) / sizeof(uint32_t) + 1];
-    
-    Flash_Read_Data(FLASH_USER_START_ADDR, 
-                    readBuffer, 
-                    sizeof(FlashData_t) / sizeof(uint32_t) + 1);
-    
-    memcpy(data, readBuffer, sizeof(FlashData_t));
-    
-    if (FlashData_Validate(data))
+
+    if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
     {
-        return FLASH_STATUS_OK;
-    }
-    else
-    {
-        FlashData_Init(data);
-        return FLASH_STATUS_INVALID;
+        uint32_t readBuffer[sizeof(FlashData_t) / sizeof(uint32_t) + 1];
+        
+        Flash_Read_Data(FLASH_USER_START_ADDR, 
+                        readBuffer, 
+                        sizeof(FlashData_t) / sizeof(uint32_t) + 1);
+        
+        memcpy(data, readBuffer, sizeof(FlashData_t));
+        
+        if (FlashData_Validate(data))
+        {
+            xSemaphoreGive(xFlashMutex);
+            return FLASH_STATUS_OK;
+        }
+        else
+        {
+            FlashData_Init(data);
+            xSemaphoreGive(xFlashMutex);
+            return FLASH_STATUS_INVALID;
+        }
+        xSemaphoreGive(xFlashMutex);
     }
     return FLASH_STATUS_ERROR;
 }
