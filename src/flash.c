@@ -9,21 +9,6 @@ SemaphoreHandle_t xFlashMutex = NULL;
 
 /****************** Helper Functions for FlashData_t ******************/
 
-/* Initialize flash data structure with default values */
-void FlashData_Init(FlashData_t *data)
-{
-    memset(data, 0, sizeof(FlashData_t));
-    data->magic = FLASH_DATA_MAGIC;
-    data->version = FLASH_DATA_VERSION;
-    for (size_t i = 0; i < 2; i++)
-    {
-        data->high_score[i] = 0;
-    }
-    
-    data->boot_count = 0;
-    data->checksum = FlashData_CalculateChecksum(data);
-}
-
 /* Calculate checksum for flash data (excluding checksum field itself) */
 uint32_t FlashData_CalculateChecksum(FlashData_t *data)
 {
@@ -37,6 +22,21 @@ uint32_t FlashData_CalculateChecksum(FlashData_t *data)
     }
     
     return checksum;
+}
+
+/* Initialize flash data structure with default values */
+void FlashData_Init(FlashData_t *data)
+{
+    memset(data, 0, sizeof(FlashData_t));
+    data->magic = FLASH_DATA_MAGIC;
+    data->version = FLASH_DATA_VERSION;
+    for (size_t i = 0; i < 2; i++)
+    {
+        data->high_score[i] = 0;
+    }
+    
+    data->boot_count = 0;
+    data->checksum = FlashData_CalculateChecksum(data);
 }
 
 /* Validate flash data integrity */

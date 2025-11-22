@@ -10,3 +10,5 @@
 #include "flash.h"
 
 #include <string.h>
+
+extern FlashData_t flash_data;

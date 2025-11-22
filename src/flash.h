@@ -43,17 +43,6 @@ typedef struct {
 /* Mutex for flash access protection */
 extern SemaphoreHandle_t xFlashMutex;
 
-/* Function prototypes - HAL Method */
-HAL_StatusTypeDef Flash_Write_HAL(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWords);
-HAL_StatusTypeDef Flash_Erase_HAL(uint32_t PageAddress);
-
-void Flash_Read_Data(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWords);
-
-/* Helper functions for FlashData_t */
-void FlashData_Init(FlashData_t *data);
-uint8_t FlashData_Validate(FlashData_t *data);
-uint32_t FlashData_CalculateChecksum(FlashData_t *data);
-
 uint8_t Flash_Save(FlashData_t *data);
 FlashStatus_t Flash_Load(FlashData_t *data);
 
