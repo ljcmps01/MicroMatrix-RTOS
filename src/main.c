@@ -62,9 +62,11 @@ int main(void)
     }
     else
     {
+        FlashData_Init(&flash_data);
         SEGGER_RTT_WriteString(0, "Failed to create flash mutex.\n");
         SEGGER_RTT_WriteString(0, "\033[93m\033[1mMicroMatrix will work but data will not be persistent.\033[0m\n");
     }
+
     #if COUNTER
     SEGGER_RTT_WriteString(0, "Start Counter App\n");
     RunApp(); // Start the counter app

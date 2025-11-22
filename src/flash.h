@@ -43,6 +43,7 @@ typedef struct {
 /* Mutex for flash access protection */
 extern SemaphoreHandle_t xFlashMutex;
 
+void FlashData_Init(FlashData_t *data);
 uint8_t Flash_Save(FlashData_t *data);
 FlashStatus_t Flash_Load(FlashData_t *data);
 
