@@ -20,6 +20,8 @@ set(HAL_SRC
     ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rtc_ex.c
     ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c
     ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c
+    ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c
+    ${STM32_HAL_DRIVER_PATH}/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c
 )
 
 # MCU settings

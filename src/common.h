@@ -6,3 +6,7 @@
 #include "fonts.h"
 #include "buttons.h"
 #include "SEGGER_RTT.h"
+#include "semphr.h"
+#include "flash.h"
+
+#include <string.h>

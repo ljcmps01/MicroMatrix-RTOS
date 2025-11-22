@@ -1,0 +1,60 @@
+#ifndef __FLASH_H
+#define __FLASH_H
+
+#include "stm32f0xx_hal.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
+#include "task.h"
+
+/* Flash memory configuration for STM32F051 */
+#define FLASH_USER_START_ADDR   0x08007000  /* Start of user data area (Page 28) */
+#define FLASH_USER_END_ADDR     0x08007FFF  /* End of page */
+
+/* Task priorities */
+#define FLASH_WRITE_TASK_PRIORITY   (tskIDLE_PRIORITY + 2)
+#define FLASH_READ_TASK_PRIORITY    (tskIDLE_PRIORITY + 1)
+
+/* Flash data magic number for validation */
+#define FLASH_DATA_MAGIC    0xDEADBEEF
+#define FLASH_DATA_VERSION  1
+
+typedef enum {
+    FLASH_STATUS_OK = 0,
+    FLASH_STATUS_ERROR,
+    FLASH_STATUS_INVALID,
+} FlashStatus_t;
+
+/* Generic persistent data structure to store in flash */
+typedef struct {
+    uint32_t magic;              /* Magic number to validate data integrity */
+    uint16_t boot_count;         /* Number of times device has booted */
+    uint8_t version;             /* Data structure version for future compatibility */
+    uint8_t status;              /* General status byte */
+    uint32_t counter;
+    
+    /* App-specific data */
+    uint32_t high_score[2];         /* High score for games */
+    uint16_t reserved[4];           /* Reserved for future use */
+
+    
+    uint32_t checksum;           /* Simple checksum for data validation */
+} FlashData_t;
+
+/* Mutex for flash access protection */
+extern SemaphoreHandle_t xFlashMutex;
+
+/* Function prototypes - HAL Method */
+HAL_StatusTypeDef Flash_Write_HAL(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWords);
+HAL_StatusTypeDef Flash_Erase_HAL(uint32_t PageAddress);
+
+void Flash_Read_Data(uint32_t StartAddress, uint32_t *Data, uint16_t NumberOfWords);
+
+/* Helper functions for FlashData_t */
+void FlashData_Init(FlashData_t *data);
+uint8_t FlashData_Validate(FlashData_t *data);
+uint32_t FlashData_CalculateChecksum(FlashData_t *data);
+
+uint8_t Flash_Save(FlashData_t *data);
+FlashStatus_t Flash_Load(FlashData_t *data);
+
+#endif // __FLASH_H

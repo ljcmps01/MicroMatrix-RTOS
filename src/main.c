@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 
 #include "common.h"
 #if COUNTER
@@ -18,6 +17,8 @@ static void MX_GPIO_Init(void);
 TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
 
+FlashData_t flash_data;
+
 /* Blink task */
 void vBlinkTask(void *pvParameters)
 {
@@ -27,6 +28,51 @@ void vBlinkTask(void *pvParameters)
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_8);  // Example: LED on PC8
         SEGGER_RTT_WriteString(0, "LED toggled\n");
         vTaskDelay(pdMS_TO_TICKS(1000));         // 500 ms delay
+    }
+}
+
+/* Task to write data to flash periodically */
+void FlashWriteTask(void *pvParameters)
+{    
+    flash_data.status = 1;
+    
+    for(;;)
+    {
+        if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
+        {
+            flash_data.counter++;
+            if (Flash_Save(&flash_data) == HAL_OK)
+            {
+                SEGGER_RTT_WriteString(0, "Flash write successful.\n");                   
+            }
+            else
+            {
+                SEGGER_RTT_WriteString(0, "Flash write failed.\n");
+            }
+            xSemaphoreGive(xFlashMutex);
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+/* Task to read data from flash periodically */
+void FlashReadTask(void *pvParameters)
+{
+    FlashData_t dataRead;
+    
+    for(;;)
+    {
+        if (xSemaphoreTake(xFlashMutex, portMAX_DELAY) == pdTRUE)
+        {
+            FlashStatus_t status = Flash_Load(&dataRead);
+            SEGGER_RTT_printf(0, "Flash Read - Counter: %lu\n", 
+                dataRead.counter);
+            
+            xSemaphoreGive(xFlashMutex);
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
 
@@ -42,6 +88,31 @@ int main(void)
 
     MX_GPIO_Init();
 
+    /* Create mutex for flash access */
+    xFlashMutex = xSemaphoreCreateMutex();
+    
+    if (xFlashMutex != NULL)
+    {
+        SEGGER_RTT_WriteString(0, "\033[92m\033[1mFlash mutex created successfully.\033[0m\n");
+
+        FlashStatus_t status = Flash_Load(&flash_data);
+
+        if(status == FLASH_STATUS_INVALID){
+            SEGGER_RTT_WriteString(0, "Flash data invalid. Initializing to defaults.\n");
+        }
+        else
+        {
+            SEGGER_RTT_WriteString(0, "Flash data valid.\n");
+        }
+        /* Create FreeRTOS tasks */
+        xTaskCreate(FlashWriteTask, "FlashWrite", 64, NULL, FLASH_WRITE_TASK_PRIORITY, NULL);
+        xTaskCreate(FlashReadTask, "FlashRead", 128, NULL, FLASH_READ_TASK_PRIORITY, NULL);
+    }
+    else
+    {
+        SEGGER_RTT_WriteString(0, "Failed to create flash mutex.\n");
+        SEGGER_RTT_WriteString(0, "\033[93m\033[1mMicroMatrix will work but data will not be persistent.\033[0m\n");
+    }
     #if COUNTER
     SEGGER_RTT_WriteString(0, "Start Counter App\n");
     RunApp(); // Start the counter app
