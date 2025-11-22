@@ -131,8 +131,8 @@ void shift_matrix(Matrix_t *matrix,uint8_t y)
         else
         {
             matrix->output[fil]=(matrix->output[fil]<<1);
-            if((1<<matrix->rows)&matrix->output[fil])
-                matrix->output[fil]++;
+          //  if((1<<matrix->rows)&matrix->output[fil])
+           //     matrix->output[fil]++;
         }
     }
 }

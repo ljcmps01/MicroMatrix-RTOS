@@ -4,6 +4,8 @@
 Button sw2,sw3;
 
 uint8_t counter=0;
+uint8_t location=0;
+uint8_t word[2][8]={0};
 
 int get_char(char c){
     if(c>='A' && c<='Z'){
@@ -26,6 +28,40 @@ void load_char_to_screen(char* c){
         if(counter!=-1){
             load_output(m,letters[counter]);
             vTaskDelay(pdMS_TO_TICKS(500));
+        }
+    }
+}
+
+void scroll_text(char* text){
+    Matrix_t *m = GetMatrix();
+    size_t len=strlen(text);
+    for(int i=0; i<len; i++){
+        if(text[i]==' '){
+            location=-1;
+            SEGGER_RTT_printf(0, "space\n");
+            for(int j=0; j<4;j++){
+                shift_matrix(m,0);
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+            
+        }
+        else location=get_char(text[i]);
+        if(location!=-1){
+            for(int j=0; j<8; j++){
+                word[1][j] = letters[location][j];
+            }
+            for(int j=0; j<8; j++){
+                load_output(m,word[0]);
+                for(int k=0; k<8; k++){
+                    word[0][k] = (word[0][k] << 1);
+                    if((1<<7) & word[1][k]){
+                        word[0][k]++;
+                    }
+                    word[1][k] = (word[1][k] << 1);
+                }
+                shift_matrix(m,0);
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
         }
     }
 }
@@ -75,7 +111,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
 
 void vAlphaTask(void *pvParameters)
 {
-    load_char_to_screen("HolA MuNdO");
+    scroll_text("Hola Mundo desde Alpha App");
     
     // After displaying, you can loop or delete the task
     for(;;) {
