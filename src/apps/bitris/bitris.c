@@ -30,7 +30,8 @@ typedef enum {
     BITRIS_LANDED,
     BITRIS_CLEARING,
     BITRIS_GAMEOVER,
-    BITRIS_STALL
+    BITRIS_STALL,
+    BITRIS_FLASH_UPDATE
 }BitrisState_t;
 
 
@@ -52,6 +53,7 @@ typedef struct {
     uint16_t failed_clicks;
 
     uint8_t score;
+    uint8_t high_score;
 
     uint16_t player_precision;
 }Stadistics_t;
@@ -72,6 +74,8 @@ Stadistics_t StadisticsInit (){
     
     new_stats.player_precision = 0;
 
+    new_stats.high_score = flash_data.bitris_high_score;
+
     return new_stats;
 }
 
@@ -84,25 +88,33 @@ void StadisticsPrint (Stadistics_t *stats){
     SEGGER_RTT_printf(0,"Failed clicks:\t\t%d\n", stats->failed_clicks);
     SEGGER_RTT_printf(0,"Precision rate:\t\t%d%%\n\n", stats->failed_clicks*100/stats->game_clicks_total);
 
+    vTaskDelay(pdMS_TO_TICKS(25));
+    SEGGER_RTT_printf(0,"Final Score:\t\t%d\n", stats->score);
+    SEGGER_RTT_printf(0,"High Score:\t\t%d\n", stats->high_score);
 
     SEGGER_RTT_WriteString(0,"=================================\n");
     SEGGER_RTT_WriteString(0,"\tPER LEVEL STATS\n");
     SEGGER_RTT_WriteString(0,"=================================\n");
+    vTaskDelay(pdMS_TO_TICKS(25));
     for (uint8_t i = 0; i < MAX_LEVEL-1; i++)
     {
-        vTaskDelay(pdMS_TO_TICKS(25));
         SEGGER_RTT_printf(0,"\t\tLEVEL  %d\n",i);
         SEGGER_RTT_WriteString(0,"=================================\n");
         SEGGER_RTT_printf(0,"Game duration:\t%ds\n", stats->game_duration_per_level[i]/1000);
         SEGGER_RTT_printf(0,"Game clicks:\t%d\n", stats->game_clicks_per_level[i]);
         SEGGER_RTT_WriteString(0,"=================================\n");
-            
+        vTaskDelay(pdMS_TO_TICKS(25));
     }
     
 }
 
+/**
+ * @brief Calculates the score based on game statistics.
+ * 
+ * @param stats Pointer to the Stadistics_t structure containing game statistics.
+ * @return uint8_t Returns 1 if a new high score is achieved, otherwise 0.
+ */
 uint8_t ScoreCalculation(Stadistics_t *stats){
-    uint8_t final_score;
     //Precision score
     float precision_score = 1.0f - (float)stats->failed_clicks/(float)MAX_CLICKS;
     //Duration score (convert milliseconds to seconds)
@@ -113,23 +125,26 @@ uint8_t ScoreCalculation(Stadistics_t *stats){
 
     float raw_score = precision_score * 0.7f + duration_score * 0.3f;
     
-    final_score = (uint8_t)(raw_score * 64);
+    stats->score = (uint8_t)(raw_score * 64);
 
-    stats->score = final_score;
-    return final_score;
+    if (stats->score > stats->high_score)
+    {
+        stats->high_score = stats->score;
+        return 1;
+    }
+    
+    return 0;
 }
 
-BitrisScreen_t BitrisInit(){
-    BitrisScreen_t new_bitris;
-    new_bitris.pos=0;
-    new_bitris.level = 1;
-    new_bitris.max_level=MAX_LEVEL;
+void BitrisInit(BitrisScreen_t *bitris){
+    bitris->pos=0;
+    bitris->level = 1;
+    bitris->max_level=MAX_LEVEL;
     for(size_t i=0;i<MAX_LEVEL;++i){
-        new_bitris.gamescreen[i] = 0x00;
+        bitris->gamescreen[i] = 0x00;
     }
-    new_bitris.state = BITRIS_IDLE;
-    new_bitris.direction = RIGHT;
-    return new_bitris;
+    bitris->state = BITRIS_IDLE;
+    bitris->direction = RIGHT;
 }
 
 Button sw2,sw3;
@@ -139,7 +154,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
     switch(event) {
         case BUTTON_EVENT_PRESS:
             if (bitris.state == BITRIS_STALL) {
-                bitris = BitrisInit();
+                BitrisInit(&bitris);
             }
             else {
                 bitris.state = BITRIS_FALLING;
@@ -169,6 +184,11 @@ void BitrisScore(uint16_t score){
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
     Stadistics_t stadistics = StadisticsInit();
+    
+    /* Print flash data after a short delay to ensure scheduler is fully running */
+    vTaskDelay(pdMS_TO_TICKS(100));
+    Flash_PrintData(&flash_data);
+    
     for(;;)
     {
         switch(bitris.state){
@@ -220,16 +240,39 @@ void vBitrisTask(void *pvParameters){
                 //Closes stats
                 stadistics.game_duration_total = (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total);
 
-                ScoreCalculation(&stadistics);
+                uint8_t new_hs = ScoreCalculation(&stadistics);
                 StadisticsPrint(&stadistics);
                 BitrisScore(stadistics.score);
                 
-                bitris = BitrisInit();
+                if (new_hs)
+                {
+                    bitris.state = BITRIS_FLASH_UPDATE;
+                    SEGGER_RTT_printf(0,"New High Score Achieved! %d > %d\n", stadistics.high_score, flash_data.bitris_high_score);
+                    vTaskDelay(pdMS_TO_TICKS(25));
+                }
+                else
+                {
+                    BitrisInit(&bitris);
+                    stadistics = StadisticsInit();
+                    bitris.state=BITRIS_STALL;
+                }
+                break;
+            case BITRIS_FLASH_UPDATE:
+                flash_data.bitris_high_score = stadistics.high_score;
+                if(Flash_Save(&flash_data) == HAL_OK){
+                    vTaskDelay(pdMS_TO_TICKS(25));
+                    SEGGER_RTT_WriteString(0,"High Score saved!\n");
+                }
+                else{
+                    vTaskDelay(pdMS_TO_TICKS(25));
+                    SEGGER_RTT_WriteString(0,"Failed to save High Score!\n");
+                }
+
+                BitrisInit(&bitris);
                 stadistics = StadisticsInit();
-                
                 bitris.state=BITRIS_STALL;
                 break;
-                case BITRIS_STALL:
+            case BITRIS_STALL:
                 load_output(matrix,bitris.gamescreen);
                 
                 vTaskDelay(pdMS_TO_TICKS(100));
@@ -242,7 +285,7 @@ void vBitrisTask(void *pvParameters){
 
 void RunApp(void)
 {
-    bitris = BitrisInit();
+    BitrisInit(&bitris);
     xTaskCreate(vBitrisTask, "Bitris", 256, NULL, 2, NULL);
     Button_Init(&sw2, BUTTON_GPIO_Port, SW2_Pin, ButtonHandler);
     Button_Init(&sw3, BUTTON_GPIO_Port, SW3_Pin, ButtonHandler);
