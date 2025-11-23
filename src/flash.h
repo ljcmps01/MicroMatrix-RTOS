@@ -33,8 +33,9 @@ typedef struct {
     uint32_t counter;
     
     /* App-specific data */
-    uint32_t high_score[2];         /* High score for games */
-    uint16_t reserved[4];           /* Reserved for future use */
+    uint8_t bitris_high_score;         /* High score for games */
+    uint8_t snake_high_score;         /* High score for games */
+    uint16_t reserved;           /* Reserved for future use */
 
     
     uint32_t checksum;           /* Simple checksum for data validation */

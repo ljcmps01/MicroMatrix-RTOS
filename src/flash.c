@@ -30,10 +30,9 @@ void FlashData_Init(FlashData_t *data)
     memset(data, 0, sizeof(FlashData_t));
     data->magic = FLASH_DATA_MAGIC;
     data->version = FLASH_DATA_VERSION;
-    for (size_t i = 0; i < 2; i++)
-    {
-        data->high_score[i] = 0;
-    }
+    
+    data->bitris_high_score = 0;
+    data->snake_high_score = 0;
     
     data->boot_count = 0;
     data->checksum = FlashData_CalculateChecksum(data);
