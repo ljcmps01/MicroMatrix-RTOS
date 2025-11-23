@@ -45,7 +45,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
             default: break;
         }
     }
-    load_output(matrix,digits[counter]);
+    load_output(matrix,letters[counter+52]);
 }
 
 void RunApp(void)
