@@ -193,6 +193,13 @@ void SnakeScore(uint16_t score){
     SEGGER_RTT_WriteString(0, "\t#\n");
     SEGGER_RTT_WriteString(0, "#########################\n");
 
+    /* Clear the entire screen first */
+    for (size_t i = 0; i < 8; i++)
+    {
+        snake_game.gamescreen[i] = 0x00;
+    }
+
+    /* Now draw the score */
     for (size_t i = 0; i < full_rows; i++)
     {
         snake_game.gamescreen[i] = 0xFF;
