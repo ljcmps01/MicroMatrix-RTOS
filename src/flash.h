@@ -7,8 +7,8 @@
 #include "task.h"
 
 /* Flash memory configuration for STM32F051 */
-#define FLASH_USER_START_ADDR   0x08007000  /* Start of user data area (Page 28) */
-#define FLASH_USER_END_ADDR     0x08007FFF  /* End of page */
+#define FLASH_USER_START_ADDR   0x0800F800  /* Start of user data area (Page 31, last 2KB) */
+#define FLASH_USER_END_ADDR     0x0800FFFF  /* End of flash */
 
 /* Task priorities */
 #define FLASH_WRITE_TASK_PRIORITY   (tskIDLE_PRIORITY + 2)
