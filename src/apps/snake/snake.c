@@ -212,6 +212,7 @@ void SnakeScore(uint16_t score){
 }
 
 void vSnakeTask(void *pvParameters){
+    Flash_PrintData(&flash_data);
     for(;;){
         switch(snake_game.state){
             case SNAKE_MOVING:
@@ -234,7 +235,21 @@ void vSnakeTask(void *pvParameters){
             case SNAKE_IDLE:
             case SNAKE_GAMEOVER:
                 SEGGER_RTT_WriteString(0, "Game Over!\n");
-                SnakeScore(snake_game.snake.length);
+                uint8_t score = snake_game.snake.length * 2;
+                if (score > flash_data.snake_high_score)
+                {
+                    flash_data.snake_high_score = score;
+                    if(Flash_Save(&flash_data) == HAL_OK){
+                        vTaskDelay(pdMS_TO_TICKS(25));
+                        SEGGER_RTT_WriteString(0,"New High Score saved!\n");
+                    }
+                    else{
+                        vTaskDelay(pdMS_TO_TICKS(25));
+                        SEGGER_RTT_WriteString(0,"Failed to save New High Score!\n");
+                    }
+                }
+                
+                SnakeScore(score);
                 snake_game.state = SNAKE_STALL;
             case SNAKE_STALL:
             default:
