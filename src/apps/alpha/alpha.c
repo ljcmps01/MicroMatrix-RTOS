@@ -50,11 +50,6 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
 void vAlphaTask(void *pvParameters)
 {
     scroll_text("Hola! ::0123456789:: /Mundo desde Alpha?; App.");
-    
-    // After displaying, you can loop or delete the task
-    for(;;) {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
 }
 
 void RunApp(void)

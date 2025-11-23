@@ -1,5 +1,8 @@
 #include "fonts.h"
-#include "common.h"
+#include "matrixstate.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "SEGGER_RTT.h"
 
 uint8_t letters[69][8]= {
   // MAYÚSCULAS
