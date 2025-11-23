@@ -6,8 +6,6 @@
 #include "counter.h"
 #elif BITRIS
 #include "bitris.h"
-#elif ALPHA
-#include "alpha.h"
 #elif SNAKE
 #include "snake.h"
 #elif ALPHA
@@ -52,9 +50,6 @@ int main(void)
     #elif BITRIS
     SEGGER_RTT_WriteString(0, "Start Bitris App\n");
     RunApp(); // Start the bitris app
-    #elif ALPHA
-    SEGGER_RTT_WriteString(0, "Start Alpha App\n");
-    RunApp(); // Start the alpha app
     #elif SNAKE
     SEGGER_RTT_WriteString(0, "Start Snake App\n");
     RunApp(); // Start the snake app
