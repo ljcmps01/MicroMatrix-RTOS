@@ -4,5 +4,6 @@
 #include "task.h"
 #include "matrixstate.h"
 #include "fonts.h"
+#include "menu.h"
 #include "buttons.h"
 #include "SEGGER_RTT.h"

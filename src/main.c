@@ -12,6 +12,8 @@
 #include "snake.h"
 #elif ALPHA
 #include "alpha.h"
+#elif MENU
+#include "menu.h"
 #endif
 
 void SystemClock_Config(void);
@@ -59,6 +61,9 @@ int main(void)
     #elif ALPHA
     SEGGER_RTT_WriteString(0, "Start Alpha App\n");
     RunApp(); // Start the alpha app
+    #elif MENU
+    SEGGER_RTT_WriteString(0, "Start Menu App\n");
+    Runapp(); // Start the menu app
     #else
     SEGGER_RTT_WriteString(0, "No app selected.\n");
     #endif
