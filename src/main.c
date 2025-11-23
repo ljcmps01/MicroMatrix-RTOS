@@ -53,7 +53,14 @@ int main(void)
         FlashStatus_t status = Flash_Load(&flash_data);
 
         if(status == FLASH_STATUS_INVALID){
-            SEGGER_RTT_WriteString(0, "Flash data invalid. Initializing to defaults.\n");
+            SEGGER_RTT_WriteString(0, "Flash data invalid. Initializing to defaults and saving...\n");
+            /* Save the initialized data to flash so next boot will be valid */
+            uint8_t save_status = Flash_Save(&flash_data);
+            if (save_status == HAL_OK) {
+                SEGGER_RTT_WriteString(0, "Default flash data saved successfully.\n");
+            } else {
+                SEGGER_RTT_WriteString(0, "Warning: Failed to save default flash data.\n");
+            }
         }
         else
         {
