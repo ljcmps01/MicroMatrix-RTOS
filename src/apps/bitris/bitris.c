@@ -51,6 +51,8 @@ typedef struct {
     uint16_t game_clicks_per_level[MAX_LEVEL];
     uint16_t failed_clicks;
 
+    uint8_t score;
+
     uint16_t player_precision;
 }Stadistics_t;
 
@@ -109,10 +111,11 @@ uint8_t ScoreCalculation(Stadistics_t *stats){
     if (precision_score < 0) precision_score = 0;
     if (duration_score < 0) duration_score = 0;
 
-    float raw_score = precision_score * 0.3f + duration_score * 0.7f;
+    float raw_score = precision_score * 0.7f + duration_score * 0.3f;
     
     final_score = (uint8_t)(raw_score * 64);
 
+    stats->score = final_score;
     return final_score;
 }
 
@@ -216,9 +219,12 @@ void vBitrisTask(void *pvParameters){
             case BITRIS_GAMEOVER:       // Game over
                 //Closes stats
                 stadistics.game_duration_total = (pdTICKS_TO_MS(xTaskGetTickCount()) - stadistics.game_duration_total);
+
+                ScoreCalculation(&stadistics);
                 StadisticsPrint(&stadistics);
+                BitrisScore(stadistics.score);
+                
                 bitris = BitrisInit();
-                BitrisScore(ScoreCalculation(&stadistics));
                 stadistics = StadisticsInit();
                 
                 bitris.state=BITRIS_STALL;
