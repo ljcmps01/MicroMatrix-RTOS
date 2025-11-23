@@ -4,7 +4,6 @@
 Button sw2,sw3;
 
 uint8_t counter=0;
-uint8_t location=0;
 uint8_t word[2][8]={0};
 
 int get_char(char c){
@@ -14,8 +13,20 @@ int get_char(char c){
     else if(c>='a' && c<='z'){
         return c-'A'-6;
     }
+    else if(c>='0' && c<='9'){
+        return c + 4;
+    }
     else{
-        return -1; //caracter no soportado
+        switch(c){
+            case ' ': return 62;
+            case '!': return 63;
+            case '?': return 64;
+            case '/': return 65;
+            case '.': return 66;
+            case ':': return 67;
+            case ';': return 68;
+            default: return -1; //caracter no soportado
+        }
     }
 }
 
@@ -33,19 +44,11 @@ void load_char_to_screen(char* c){
 }
 
 void scroll_text(char* text){
+    int location=0;
     Matrix_t *m = GetMatrix();
     size_t len=strlen(text);
     for(int i=0; i<len; i++){
-        if(text[i]==' '){
-            location=-1;
-            SEGGER_RTT_printf(0, "space\n");
-            for(int j=0; j<4;j++){
-                shift_matrix(m,0);
-                vTaskDelay(pdMS_TO_TICKS(100));
-            }
-            
-        }
-        else location=get_char(text[i]);
+        location=get_char(text[i]);
         if(location!=-1){
             for(int j=0; j<8; j++){
                 word[1][j] = letters[location][j];
@@ -111,7 +114,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
 
 void vAlphaTask(void *pvParameters)
 {
-    scroll_text("Hola Mundo desde Alpha App");
+    scroll_text("Hola! ::0123456789:: /Mundo desde Alpha?; App.");
     
     // After displaying, you can loop or delete the task
     for(;;) {
