@@ -2,7 +2,6 @@
 #include "matrixstate.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "SEGGER_RTT.h"
 
 uint8_t letters[69][8]= {
   // MAYÚSCULAS
@@ -747,7 +746,6 @@ void load_char_to_screen(char* c){
     size_t a=strlen(c);
     for(int i=0; i<a; i++){
         count=get_char(c[i]);
-        SEGGER_RTT_printf(0, "Loading char: %c  (index %d)\n", c[i],count);
         if(count!=-1){
             load_output(m,letters[count]);
             vTaskDelay(pdMS_TO_TICKS(500));
