@@ -35,13 +35,13 @@ static inline void Flash_PrintData(const FlashData_t *data){
     SEGGER_RTT_printf(0, "Version: %u\n", data->version);
     vTaskDelay(pdMS_TO_TICKS(10));
     SEGGER_RTT_printf(0, "Status: %u\n", data->status);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(25));
     SEGGER_RTT_printf(0, "Counter: %lu\n", data->counter);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(25));
     SEGGER_RTT_printf(0, "Snake High Score: %u\n", data->snake_high_score);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(25));
     SEGGER_RTT_printf(0, "Bitris High Score: %u\n", data->bitris_high_score);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(25));
     SEGGER_RTT_WriteString(0, "=====================\n");
     SEGGER_RTT_printf(0, "Checksum: 0x%08lX\n", data->checksum);
     SEGGER_RTT_WriteString(0, "=====================\n");
