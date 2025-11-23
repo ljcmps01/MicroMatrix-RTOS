@@ -1,4 +1,5 @@
 #include "fonts.h"
+#include "common.h"
 
 uint8_t digits[10][8]={
     // 0
@@ -826,3 +827,54 @@ uint8_t letters[69][8]= {
     0b00000000,
   }
 };
+
+int get_char(char c){
+    if(c>='A' && c<='Z'){
+        return c-'A';
+    }
+    else if(c>='a' && c<='z'){
+        return c-'A'-6;
+    }
+    else if(c>='0' && c<='9'){
+        return c + 4;
+    }
+    else{
+        switch(c){
+            case ' ': return 62;
+            case '!': return 63;
+            case '?': return 64;
+            case '/': return 65;
+            case '.': return 66;
+            case ':': return 67;
+            case ';': return 68;
+            default: return -1; //caracter no soportado
+        }
+    }
+}
+
+void scroll_text(char* text){
+  uint8_t word[2][8]={0};
+  int location=0;
+  Matrix_t *m = GetMatrix();
+  size_t len=strlen(text);
+  for(int i=0; i<len; i++){
+      location=get_char(text[i]);
+      if(location!=-1){
+          for(int j=0; j<8; j++){
+              word[1][j] = letters[location][j];
+          }
+          for(int j=0; j<8; j++){
+              load_output(m,word[0]);
+              for(int k=0; k<8; k++){
+                  word[0][k] = (word[0][k] << 1);
+                  if((1<<7) & word[1][k]){
+                      word[0][k]++;
+                  }
+                  word[1][k] = (word[1][k] << 1);
+              }
+              shift_matrix(m,0);
+              vTaskDelay(pdMS_TO_TICKS(100));
+          }
+      }
+  }
+}
