@@ -137,7 +137,7 @@ void BitrisInit(BitrisScreen_t *bitris){
     for(size_t i=0;i<MAX_LEVEL;++i){
         bitris->gamescreen[i] = 0x00;
     }
-    bitris->state = BITRIS_IDLE;
+    bitris->state = BITRIS_STALL;
     bitris->direction = RIGHT;
 }
 
@@ -163,24 +163,19 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event){
 }
 
 void BitrisScore(uint16_t score){
-    uint8_t full_rows = score / 8;
-    uint8_t remainder = score % 8;
-
-    for (size_t i = 0; i < full_rows; i++)
-    {
-        bitris.gamescreen[i] = 0xFF;
+    char score_str[5], high_score_str[5];
+    __itoa(score, score_str, 10);
+    __itoa(flash_data.bitris_high_score, high_score_str, 10);
+    if (score>0 && score!=flash_data.bitris_high_score){
+        scroll_text("Score:", 50);
+        scroll_text(score_str, 100);
     }
-    if (full_rows < 8)
-    {
-        bitris.gamescreen[full_rows] = (1 << remainder) - 1;
-    }
-    
-    
+    scroll_text("Hi Sc:", 50);
+    scroll_text(high_score_str, 100);
 }
 
 void vBitrisTask(void *pvParameters){
     Matrix_t *matrix = GetMatrix();
-    Stadistics_t stadistics = StadisticsInit();
     
     /* Print flash data after a short delay to ensure scheduler is fully running */
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -239,7 +234,6 @@ void vBitrisTask(void *pvParameters){
 
                 uint8_t new_hs = ScoreCalculation(&stadistics);
                 StadisticsPrint(&stadistics);
-                BitrisScore(stadistics.score);
                 
                 if (new_hs)
                 {
@@ -248,9 +242,9 @@ void vBitrisTask(void *pvParameters){
                 bitris.state=BITRIS_STALL;
                 break;
             case BITRIS_STALL:
-                load_output(matrix,bitris.gamescreen);
+                BitrisScore(stadistics.score);
                 
-                vTaskDelay(pdMS_TO_TICKS(100));
+                vTaskDelay(pdMS_TO_TICKS(500));
                 break;
             default:
                 break;
