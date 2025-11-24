@@ -53,7 +53,6 @@ typedef struct {
     uint16_t failed_clicks;
 
     uint8_t score;
-    uint8_t high_score;
 
     uint16_t player_precision;
 }Stadistics_t;
@@ -85,7 +84,7 @@ void StadisticsPrint (Stadistics_t *stats){
 
     vTaskDelay(pdMS_TO_TICKS(25));
     SEGGER_RTT_printf(0,"Final Score:\t\t%d\n", stats->score);
-    SEGGER_RTT_printf(0,"High Score:\t\t%d\n", stats->high_score);
+    SEGGER_RTT_printf(0,"High Score:\t\t%d\n", flash_data.bitris_high_score);
 
     SEGGER_RTT_WriteString(0,"=================================\n");
     SEGGER_RTT_WriteString(0,"\tPER LEVEL STATS\n");
@@ -122,7 +121,7 @@ uint8_t ScoreCalculation(Stadistics_t *stats){
     
     stats->score = (uint8_t)(raw_score * 64);
 
-    if (stats->score > stats->high_score)
+    if (stats->score > flash_data.bitris_high_score)
     {
         stats->high_score = stats->score;
         return 1;
