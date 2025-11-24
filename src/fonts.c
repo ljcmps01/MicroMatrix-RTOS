@@ -740,24 +740,36 @@ int get_char(char c){
     }
 }
 
-void load_char_to_screen(char* c){
+void load_char_to_screen(char* c, uint8_t speed){
     Matrix_t *m = GetMatrix();
-    uint8_t count=0;
+    int count=0;
     size_t a=strlen(c);
+
+    if (speed<20)
+    {
+      speed=20;
+    }
+    
     for(int i=0; i<a; i++){
         count=get_char(c[i]);
         if(count!=-1){
             load_output(m,letters[count]);
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(speed));
         }
     }
 }
 
-void scroll_text(char* text){
+void scroll_text(char* text, uint8_t speed){
   uint8_t word[2][8]={0};
   int location=0;
   Matrix_t *m = GetMatrix();
   size_t len=strlen(text);
+
+  if (speed<20)
+  {
+    speed=20;
+  }
+
   for(int i=0; i<len; i++){
       location=get_char(text[i]);
       if(location!=-1){
@@ -774,7 +786,7 @@ void scroll_text(char* text){
                   word[1][k] = (word[1][k] << 1);
               }
               shift_matrix(m,0);
-              vTaskDelay(pdMS_TO_TICKS(100));
+              vTaskDelay(pdMS_TO_TICKS(speed));
           }
       }
   }

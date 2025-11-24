@@ -49,7 +49,7 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
 
 void vAlphaTask(void *pvParameters)
 {
-    scroll_text("Hola! ::0123456789:: /Mundo desde Alpha?; App.");
+    scroll_text("Hola! ::0123456789:: /Mundo desde Alpha?; App.", 30);
 }
 
 void RunApp(void)
