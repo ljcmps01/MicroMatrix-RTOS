@@ -9,13 +9,9 @@
 #define MAX_DURATION 300000
 
 /*TODO:
-- Implement lives
-- Implement score   (Could be done through RTT until fonts is implemented)
-
 - Add animations (score, fail, gameover, etc)
 - Implement LedState for visual score indication
 - Add pause state
-    - For gameover pause
     - Button gesture to pause the game
 */
 
@@ -118,7 +114,7 @@ uint8_t ScoreCalculation(Stadistics_t *stats){
 
     float raw_score = precision_score * 0.7f + duration_score * 0.3f;
     
-    stats->score = (uint8_t)(raw_score * 64);
+    stats->score = (uint8_t)(raw_score * 255);
 
     if (stats->score > flash_data.bitris_high_score)
     {
