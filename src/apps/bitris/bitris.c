@@ -58,25 +58,20 @@ typedef struct {
     uint16_t player_precision;
 }Stadistics_t;
 
-Stadistics_t StadisticsInit (){
-    Stadistics_t new_stats;
-    new_stats.game_duration_total = pdTICKS_TO_MS(xTaskGetTickCount());
-    new_stats.game_clicks_total = 0;
+void StadisticsInit (Stadistics_t *stats){
+    stats->game_duration_total = pdTICKS_TO_MS(xTaskGetTickCount());
+    stats->game_clicks_total = 0;
 
-    new_stats.game_duration_per_level[0] = 0;
+    stats->game_duration_per_level[0] = 0;
 
     for (uint8_t i = 0; i < MAX_LEVEL; i++)
     {
-        new_stats.game_clicks_per_level[i] = 0;
+        stats->game_clicks_per_level[i] = 0;
     }
 
-    new_stats.failed_clicks = 0;
+    stats->failed_clicks = 0;
     
-    new_stats.player_precision = 0;
-
-    new_stats.high_score = flash_data.bitris_high_score;
-
-    return new_stats;
+    stats->player_precision = 0;
 }
 
 void StadisticsPrint (Stadistics_t *stats){
@@ -149,12 +144,15 @@ void BitrisInit(BitrisScreen_t *bitris){
 
 Button sw2,sw3;
 BitrisScreen_t bitris;
+Stadistics_t stadistics;
 
 void ButtonHandler(const Button *btn, ButtonEvent_t event){
     switch(event) {
         case BUTTON_EVENT_PRESS:
             if (bitris.state == BITRIS_STALL) {
+                StadisticsInit(&stadistics);
                 BitrisInit(&bitris);
+                bitris.state = BITRIS_IDLE;
             }
             else {
                 bitris.state = BITRIS_FALLING;
