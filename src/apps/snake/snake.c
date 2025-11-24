@@ -187,28 +187,21 @@ void SnakeScore(uint16_t score){
 
     char score_msg[20];
     char *pScore = __itoa(score,score_msg, 10);
-    SEGGER_RTT_WriteString(0, "#########################\n");
-    SEGGER_RTT_WriteString(0, "#\tScore: ");
-    SEGGER_RTT_WriteString(0, pScore);
-    SEGGER_RTT_WriteString(0, "\t#\n");
-    SEGGER_RTT_WriteString(0, "#########################\n");
+    if (score>0)
+    {
+        SEGGER_RTT_WriteString(0, "#########################\n");
+        SEGGER_RTT_WriteString(0, "#\tScore: ");
+        SEGGER_RTT_WriteString(0, pScore);
+        SEGGER_RTT_WriteString(0, "\t#\n");
+        SEGGER_RTT_WriteString(0, "#########################\n");
+        scroll_text("Score:", 50);
+        scroll_text(pScore, 100);
+    }
+    char high_score_str[5];
+    __itoa(flash_data.snake_high_score, high_score_str, 10);
+    scroll_text("Hi Sc:", 50);
+    scroll_text(high_score_str, 100);
 
-    /* Clear the entire screen first */
-    for (size_t i = 0; i < 8; i++)
-    {
-        snake_game.gamescreen[i] = 0x00;
-    }
-
-    /* Now draw the score */
-    for (size_t i = 0; i < full_rows; i++)
-    {
-        snake_game.gamescreen[i] = 0xFF;
-    }
-    if (full_rows < 8)
-    {
-        snake_game.gamescreen[full_rows] = (1 << remainder) - 1;
-    }
-    load_output(GetMatrix(), snake_game.gamescreen);
 }
 
 void vSnakeTask(void *pvParameters){
@@ -235,7 +228,7 @@ void vSnakeTask(void *pvParameters){
             case SNAKE_IDLE:
             case SNAKE_GAMEOVER:
                 SEGGER_RTT_WriteString(0, "Game Over!\n");
-                uint8_t score = snake_game.snake.length * 2;
+                uint8_t score = snake_game.snake.length*2;
                 if (score > flash_data.snake_high_score)
                 {
                     flash_data.snake_high_score = score;
@@ -249,9 +242,10 @@ void vSnakeTask(void *pvParameters){
                     }
                 }
                 
-                SnakeScore(score);
                 snake_game.state = SNAKE_STALL;
             case SNAKE_STALL:
+                SnakeScore(score);
+                break;
             default:
                 break;
         }
