@@ -740,14 +740,14 @@ int get_char(char c){
     }
 }
 
-void load_char_to_screen(char* c, uint8_t speed){
+void spell_text(char* c, uint16_t speed){
     Matrix_t *m = GetMatrix();
     int count=0;
     size_t a=strlen(c);
 
-    if (speed<20)
+    if (speed<125)
     {
-      speed=20;
+      speed=125;
     }
     
     for(int i=0; i<a; i++){

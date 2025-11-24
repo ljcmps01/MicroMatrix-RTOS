@@ -9,6 +9,6 @@ extern uint8_t letters[69][8];
 
 int get_char(char c);
 void scroll_text(char* text, uint8_t speed);
-void load_char_to_screen(char* c, uint8_t speed);
+void spell_text(char* c, uint16_t speed);
 
 #endif
