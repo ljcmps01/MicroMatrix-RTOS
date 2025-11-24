@@ -30,8 +30,7 @@ typedef enum {
     BITRIS_LANDED,
     BITRIS_CLEARING,
     BITRIS_GAMEOVER,
-    BITRIS_STALL,
-    BITRIS_FLASH_UPDATE
+    BITRIS_STALL
 }BitrisState_t;
 
 
@@ -123,7 +122,8 @@ uint8_t ScoreCalculation(Stadistics_t *stats){
 
     if (stats->score > flash_data.bitris_high_score)
     {
-        stats->high_score = stats->score;
+        flash_data.bitris_high_score = stats->score;
+        Flash_Save(&flash_data);
         return 1;
     }
     
@@ -243,30 +243,8 @@ void vBitrisTask(void *pvParameters){
                 
                 if (new_hs)
                 {
-                    bitris.state = BITRIS_FLASH_UPDATE;
-                    SEGGER_RTT_printf(0,"New High Score Achieved! %d > %d\n", stadistics.high_score, flash_data.bitris_high_score);
-                    vTaskDelay(pdMS_TO_TICKS(25));
+                    SEGGER_RTT_printf(0,"New High Score Achieved! %d > %d\n", stadistics.score, flash_data.bitris_high_score);
                 }
-                else
-                {
-                    BitrisInit(&bitris);
-                    stadistics = StadisticsInit();
-                    bitris.state=BITRIS_STALL;
-                }
-                break;
-            case BITRIS_FLASH_UPDATE:
-                flash_data.bitris_high_score = stadistics.high_score;
-                if(Flash_Save(&flash_data) == HAL_OK){
-                    vTaskDelay(pdMS_TO_TICKS(25));
-                    SEGGER_RTT_WriteString(0,"High Score saved!\n");
-                }
-                else{
-                    vTaskDelay(pdMS_TO_TICKS(25));
-                    SEGGER_RTT_WriteString(0,"Failed to save High Score!\n");
-                }
-
-                BitrisInit(&bitris);
-                stadistics = StadisticsInit();
                 bitris.state=BITRIS_STALL;
                 break;
             case BITRIS_STALL:
