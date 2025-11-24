@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-uint8_t letters[69][8]= {
+const uint8_t letters[69][8]= {
   // MAYÚSCULAS
   {
     0b00011000,
