@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <string.h>
 
 #include "common.h"
 #if COUNTER
@@ -17,6 +16,8 @@ static void MX_GPIO_Init(void);
 
 TaskHandle_t blinkHandle = NULL;
 uint8_t led_state=0;
+
+FlashData_t flash_data;
 
 /* Blink task */
 void vBlinkTask(void *pvParameters)
@@ -41,6 +42,37 @@ int main(void)
     SEGGER_RTT_WriteString(0, "GPIO and RTT initialized.\n");
 
     MX_GPIO_Init();
+
+    /* Create mutex for flash access */
+    xFlashMutex = xSemaphoreCreateMutex();
+    
+    if (xFlashMutex != NULL)
+    {
+        SEGGER_RTT_WriteString(0, "\033[92m\033[1mFlash mutex created successfully.\033[0m\n");
+
+        FlashStatus_t status = Flash_Load(&flash_data);
+
+        if(status == FLASH_STATUS_INVALID){
+            SEGGER_RTT_WriteString(0, "Flash data invalid. Initializing to defaults and saving...\n");
+            /* Save the initialized data to flash so next boot will be valid */
+            uint8_t save_status = Flash_Save(&flash_data);
+            if (save_status == HAL_OK) {
+                SEGGER_RTT_WriteString(0, "Default flash data saved successfully.\n");
+            } else {
+                SEGGER_RTT_WriteString(0, "Warning: Failed to save default flash data.\n");
+            }
+        }
+        else
+        {
+            SEGGER_RTT_WriteString(0, "Flash data valid.\n");
+        }
+    }
+    else
+    {
+        FlashData_Init(&flash_data);
+        SEGGER_RTT_WriteString(0, "Failed to create flash mutex.\n");
+        SEGGER_RTT_WriteString(0, "\033[93m\033[1mMicroMatrix will work but data will not be persistent.\033[0m\n");
+    }
 
     #if COUNTER
     SEGGER_RTT_WriteString(0, "Start Counter App\n");

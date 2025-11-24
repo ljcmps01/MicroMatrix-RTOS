@@ -9,6 +9,8 @@
         "stm32f0xx_hal.h": "c",
         "task.h": "c",
         "common.h": "c",
-        "stdio.h": "c"
-    }
+        "counter.h": "c",
+        "semphr.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

@@ -3,26 +3,25 @@
 
 Button sw2,sw3;
 
-uint8_t counter=0;
-
 void ButtonHandler(const Button *btn, ButtonEvent_t event)
 {
     Matrix_t *matrix = GetMatrix();
+    uint32_t last_counter = flash_data.counter;
     if (btn == &sw2) {
         switch(event) {
             case BUTTON_EVENT_SHORT: 
                 SEGGER_RTT_WriteString(0, "SW2 Short Press\n"); 
-                if(counter<9) counter++;
-                else counter=0;
+                if(flash_data.counter<9) flash_data.counter++;
+                else flash_data.counter=0;
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW2 Long Press\n"); 
-                counter=9;
+                flash_data.counter=9;
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW2 Double Tap\n"); 
-                if(counter>0) counter--;
-                else counter=9;
+                if(flash_data.counter>0) flash_data.counter--;
+                else flash_data.counter=9;
                 break;
             default: break;
         }
@@ -30,22 +29,26 @@ void ButtonHandler(const Button *btn, ButtonEvent_t event)
         switch(event) {
             case BUTTON_EVENT_SHORT: 
                 SEGGER_RTT_WriteString(0, "SW3 Short Press\n");             
-                if(counter>0) counter--;
-                else counter=9;
+                if(flash_data.counter>0) flash_data.counter--;
+                else flash_data.counter=9;
                 break;
             case BUTTON_EVENT_LONG:  
                 SEGGER_RTT_WriteString(0, "SW3 Long Press\n"); 
-                counter=0;
+                flash_data.counter=0;
                 break;
             case BUTTON_EVENT_DOUBLE:
                 SEGGER_RTT_WriteString(0, "SW3 Double Tap\n"); 
-                if(counter<9) counter++;
-                else counter=0;
+                if(flash_data.counter<9) flash_data.counter++;
+                else flash_data.counter=0;
                 break;
             default: break;
         }
     }
-    load_output(matrix,letters[counter+52]);
+    if(last_counter != flash_data.counter){
+        SEGGER_RTT_printf(0, "Counter: %lu\n", flash_data.counter);
+        Flash_Save(&flash_data);
+        load_output(matrix,letters[flash_data.counter%10+52]); //Calculate the leftover over 10 in case counter overflows
+    }
 }
 
 void RunApp(void)
